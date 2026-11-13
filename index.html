@@ -7,7 +7,7 @@
     <title>收据凭证</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
     <style>
-        /* 核心防坑：强制锁死字体大小，防止手机大字体撑破排版 */
+        /* 基础样式与防炸限制 */
         * {
             -webkit-text-size-adjust: 100% !important;
             text-size-adjust: 100% !important;
@@ -17,7 +17,6 @@
             font-family: -apple-system, BlinkMacSystemFont, "PingFang SC", "Helvetica Neue", Arial, sans-serif;
         }
         
-        /* 桌面端背景（居中显示手机壳） */
         body {
             background-color: #e2e8f0;
             display: flex;
@@ -35,14 +34,13 @@
             height: 100vh;
             background-color: #f4f6f8;
             position: relative;
-            overflow: hidden; /* 防止出现横向滚动条 */
+            overflow: hidden;
             box-shadow: 0 10px 30px rgba(0,0,0,0.1);
         }
         @media (min-width: 481px) {
             #app-container { height: 90vh; max-height: 900px; border-radius: 16px; }
         }
 
-        /* 视图控制 */
         .view {
             position: absolute;
             top: 0; left: 0; width: 100%; height: 100%;
@@ -50,11 +48,11 @@
             flex-direction: column;
             overflow-y: auto;
             background-color: #f4f6f8;
-            padding-bottom: 80px; /* 留出底部按钮的空间 */
+            padding-bottom: 80px;
         }
         .view.active { display: flex; }
 
-        /* ================= 通用组件 ================= */
+        /* 通用组件 */
         .navbar { background: #fff; padding: 14px 16px; display: flex; justify-content: space-between; align-items: center; position: sticky; top: 0; z-index: 10; }
         .nav-title { font-size: 17px; font-weight: 500; position: absolute; left: 50%; transform: translateX(-50%); }
         .nav-icon { font-size: 18px; color: #333; cursor: pointer; display: flex; align-items: center; gap: 5px; }
@@ -67,14 +65,13 @@
         .val { font-size: 15px; color: #333; text-align: right; flex-grow: 1; }
         .val-input { border: none; outline: none; text-align: right; font-size: 15px; color: #333; width: 100%; background: transparent; }
         .icon-green { color: #009b6b; font-size: 16px; margin-left: 6px; }
-        
-        /* ================= 视图1：录入页 ================= */
+
+        /* 视图1：录入页 */
         .paste-box { background: #f7f9fa; margin: 12px; border-radius: 6px; padding: 12px; position: relative; }
         .paste-box textarea { width: 100%; border: none; background: transparent; outline: none; resize: none; font-size: 14px; color: #333; height: 50px; }
         .paste-box textarea::placeholder { color: #ccc; }
         .btn-paste { background: #009b6b; color: #fff; border: none; padding: 6px 12px; border-radius: 4px; font-size: 13px; position: absolute; bottom: 12px; right: 12px; cursor: pointer; }
 
-        /* 明细列表录入 */
         .item-row { display: flex; align-items: center; padding: 12px 15px; border-bottom: 1px solid #f5f5f5; gap: 8px; }
         .item-row input.item-name { flex: 1; min-width: 0; border: none; outline: none; font-size: 15px; font-weight: 500; color: #333; }
         .item-calc { display: flex; align-items: center; color: #333; font-size: 15px; flex-shrink: 0; }
@@ -97,11 +94,10 @@
         .stamp-btn { flex: 1; text-align: center; padding: 12px 0; border-radius: 4px; font-size: 15px; background: #f7f9fa; color: #666; cursor: pointer; }
         .stamp-btn.active { background: #009b6b; color: #fff; }
 
-        /* 底部操作栏（绝对定位在容器底部） */
         .bottom-bar { position: absolute; bottom: 0; left: 0; width: 100%; background: #fff; padding: 12px 16px; z-index: 100; border-top: 1px solid #eee; }
         .btn-block { background: #009b6b; color: #fff; border: none; width: 100%; padding: 14px; border-radius: 8px; font-size: 16px; font-weight: bold; cursor: pointer; }
 
-        /* ================= 视图2：详情页 ================= */
+        /* 视图2：详情页 */
         .detail-header-nav { display: flex; justify-content: space-between; align-items: center; padding: 15px 16px; background: #f4f6f8; position: sticky; top:0; z-index:10;}
         .detail-actions { display: flex; gap: 10px; }
         .detail-actions span { background: #fff; padding: 6px 12px; border-radius: 20px; font-size: 13px; color: #333; cursor: pointer; border: 1px solid #eee; }
@@ -138,7 +134,7 @@
         .btn-home { display: flex; flex-direction: column; align-items: center; font-size: 12px; color: #666; width: 60px; cursor: pointer; }
         .btn-preview { flex: 1; background: #009b6b; color: #fff; border-radius: 6px; font-size: 16px; font-weight: bold; display: flex; justify-content: center; align-items: center; padding: 14px; margin-left: 15px; cursor: pointer; }
 
-        /* ================= 视图3：预览页 ================= */
+        /* 视图3：预览页 */
         #view3 { background: linear-gradient(180deg, #009b6b 0%, #009b6b 150px, #f4f6f8 150px); padding-bottom: 80px; }
         .pv-top-bar { padding: 15px 16px; display: flex; justify-content: space-between; color: #fff; font-size: 17px; font-weight: 500; }
         .pv-success-icon { text-align: center; padding: 10px 0 20px 0; color: #fff; }
@@ -146,7 +142,7 @@
         .pv-success-icon h2 { font-size: 20px; letter-spacing: 1px; }
 
         /* 核心截图账单卡片 */
-        #receipt-card { background: #fff; margin: 0 12px; border-radius: 8px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); padding: 25px 15px; }
+        #receipt-card { background: #fff; margin: 0 12px; border-radius: 8px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); padding: 25px 15px; cursor: pointer; }
         #receipt-card * { font-family: "PingFang SC", "Microsoft YaHei", sans-serif; color: #333; }
         
         .rc-header { text-align: center; position: relative; margin-bottom: 20px; }
@@ -157,7 +153,6 @@
         .rc-info-row { display: flex; justify-content: space-between; margin-bottom: 8px; font-size: 13px; font-weight: bold; margin-top: 15px;}
         .rc-info-row span { display: flex; }
 
-        /* 核心表格 */
         .rc-table { width: 100%; border-collapse: collapse; border: 1px solid #7b5d40; table-layout: fixed; margin-top: 10px; }
         .rc-table th, .rc-table td { border: 1px solid #7b5d40; padding: 10px 2px; text-align: center; font-size: 12px; font-weight: bold; white-space: nowrap; overflow: hidden; }
         .rc-table th { font-size: 13px; }
@@ -169,28 +164,25 @@
         .rc-table th:nth-child(6), .rc-table td:nth-child(6) { width: 18%; }
         .rc-table th:nth-child(7), .rc-table td:nth-child(7) { width: 15%; }
 
-        /* 合计栏 */
         .rc-total-row { display: flex; border: 1px solid #7b5d40; border-top: none; font-size: 12px; font-weight: bold; }
         .rc-total-row .l { width: 45px; border-right: 1px solid #7b5d40; display: flex; align-items: center; justify-content: center; }
         .rc-total-row .m { flex: 1; padding: 10px; border-right: 1px solid #7b5d40; display: flex; align-items: center; overflow: hidden; }
         .rc-total-row .r { width: 135px; padding: 10px; display: flex; justify-content: space-between; }
 
-        /* 底部信息 */
         .rc-footer { margin-top: 20px; font-size: 13px; font-weight: bold; line-height: 1.8; }
         .rc-f-row { display: flex; justify-content: space-between; margin-bottom: 5px; }
         .rc-f-row span { white-space: nowrap; }
 
         .pv-click-hint { text-align: center; color: #009b6b; font-size: 15px; font-weight: bold; margin: 20px 0; cursor: pointer; }
 
-        /* 底部悬浮操作栏 */
         .pv-bottom-bar { position: absolute; bottom: 0; left: 0; width: 100%; background: #fff; display: flex; padding: 10px 15px; border-top: 1px solid #eee; z-index: 100; align-items: center; gap: 10px; }
         .pv-btn-icon { display: flex; flex-direction: column; align-items: center; font-size: 11px; color: #666; cursor: pointer; width: 45px; flex-shrink: 0; }
         .pv-btn-icon span { font-size: 20px; margin-bottom: 2px; }
         .pv-btn-outline { flex: 1; display: flex; align-items: center; justify-content: center; border: 1px solid #009b6b; color: #009b6b; border-radius: 6px; font-size: 14px; font-weight: bold; padding: 12px 0; cursor: pointer; white-space: nowrap; }
         .pv-btn-solid { flex: 1.2; display: flex; align-items: center; justify-content: center; background: #009b6b; color: #fff; border-radius: 6px; font-size: 14px; font-weight: bold; padding: 12px 0; cursor: pointer; border: none; white-space: nowrap; }
 
-        /* 弹窗 */
-        #image-modal { display: none; position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.85); z-index: 999; flex-direction: column; justify-content: center; align-items: center; }
+        /* 图片弹窗 (设为 fixed 铺满全屏) */
+        #image-modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.85); z-index: 9999; flex-direction: column; justify-content: center; align-items: center; }
         #image-modal img { max-width: 95%; max-height: 80%; border-radius: 4px; background: #fff; }
         #image-modal p { color: #fff; margin-top: 15px; font-size: 15px; }
     </style>
@@ -396,8 +388,8 @@
             <h2 id="pv-status">账单已结清</h2>
         </div>
 
-        <!-- 截图目标卡片 -->
-        <div id="receipt-card">
+        <!-- 截图目标卡片：绑定了点击事件 -->
+        <div id="receipt-card" onclick="showImageModal()">
             <div class="rc-header">
                 <div class="rc-title" id="pv-company">西安七彩阳光涂料有限公司</div>
                 <div class="rc-line"></div>
@@ -462,13 +454,13 @@
         </div>
     </div>
 
-    <!-- 放大图片弹窗 -->
-    <div id="image-modal" onclick="this.style.display='none'">
-        <img id="result-img" src="">
-        <p>长按图片保存到手机相册</p>
-    </div>
-
 </div> <!-- End app-container -->
+
+<!-- 放大图片弹窗 (移出容器，基于全局 fixed 定位，防止被遮挡) -->
+<div id="image-modal" onclick="this.style.display='none'">
+    <img id="result-img" src="">
+    <p>长按图片保存到手机相册</p>
+</div>
 
     <script>
         // 初始化时间
@@ -482,7 +474,6 @@
         addItem('脱膜油', 950, 1);
         addItem('油泵连接套', 40, 2);
 
-        // 动态生成明细行
         function addItem(name = '', price = '', qty = '') {
             const container = document.getElementById('items-container');
             const row = document.createElement('div');
@@ -501,7 +492,6 @@
             calcTotal();
         }
 
-        // 计算总价
         function calcTotal() {
             let total = 0;
             document.querySelectorAll('#items-container .item-row').forEach(row => {
@@ -532,7 +522,6 @@
             btn.classList.add('active');
         }
 
-        // 人民币大写
         function toChineseMoney(n) {
             if (!/^(0|[1-9]\d*)(\.\d+)?$/.test(n)) return "";
             let unit = "仟佰拾亿仟佰拾万仟佰拾元角分", str = "";
@@ -544,18 +533,15 @@
             return str.replace(/零(仟|佰|拾|角)/g, "零").replace(/(零)+/g, "零").replace(/零(万|亿|元)/g, "$1").replace(/(亿)万|壹(拾)/g, "$1$2").replace(/^元零?|零分/g, "").replace(/元$/g, "元整");
         }
 
-        // ================= 核心跳转与数据同步 =================
         let globalData = {};
 
         function switchView(viewId) {
             document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
             document.getElementById(viewId).classList.add('active');
-            // 切换视图时，滚动条回到顶部
             document.getElementById(viewId).scrollTop = 0;
         }
 
         function saveToDetail() {
-            // 收集数据
             globalData = {
                 company: document.getElementById('in-company').value,
                 customer: document.getElementById('in-customer').value,
@@ -578,7 +564,6 @@
                 });
             });
 
-            // 填充详情页
             document.getElementById('dt-customer').innerText = globalData.customer;
             document.getElementById('dt-address').innerText = globalData.address;
             document.getElementById('dt-time').innerText = `${globalData.date} ${globalData.time}:00`;
@@ -601,12 +586,10 @@
             });
             document.getElementById('dt-items-list').innerHTML = html;
 
-            // 跳转
             switchView('view2');
         }
 
         function goToPreview() {
-            // 填充预览页
             document.getElementById('pv-company').innerText = globalData.company;
             document.getElementById('pv-customer').innerText = globalData.customer;
             document.getElementById('pv-date').innerText = globalData.date;
@@ -620,7 +603,6 @@
             document.getElementById('pv-rcv').innerText = globalData.received.toFixed(2);
             document.getElementById('pv-debt').innerText = globalData.debt.toFixed(2);
 
-            // 动态生成单号
             document.getElementById('pv-no').innerText = 'DZ' + globalData.date.replace(/-/g, '') + Math.floor(Math.random()*100000000).toString().padStart(8,'0');
 
             if(globalData.debt > 0) {
@@ -640,57 +622,69 @@
                     `;
                 }
             });
-            // 补齐空行
             for(let i = index; i <= 5; i++) {
                 html += `<tr><td>${i}</td><td></td><td></td><td></td><td></td><td></td><td></td></tr>`;
             }
             document.getElementById('pv-tbody').innerHTML = html;
 
-            // 跳转
             switchView('view3');
         }
 
-        // ================= 图片生成逻辑 =================
-        function renderToImage(callback) {
-            const element = document.getElementById('receipt-card');
-            
-            // 记录当前滚动位置，生成图片时防止偏移
-            const scrollTop = document.getElementById('view3').scrollTop;
-            document.getElementById('view3').scrollTop = 0;
+        // ================= 终极图片生成逻辑 =================
+        // 防止页面滚动导致截图错位，采用克隆节点的方式
+        function showImageModal() {
+            // 简单的防抖提示
+            if(window.isRendering) return;
+            window.isRendering = true;
+            const modalTip = document.querySelector('#image-modal p');
+            const originalText = modalTip.innerText;
+            modalTip.innerText = "正在生成高清图片...";
+            document.getElementById('image-modal').style.display = 'flex';
 
-            html2canvas(element, {
+            const originalCard = document.getElementById('receipt-card');
+            // 克隆卡片
+            const clone = originalCard.cloneNode(true);
+            // 设置克隆卡片的样式，使其脱离文档流且不显示在屏幕可见区域
+            clone.style.position = 'absolute';
+            clone.style.top = '0';
+            clone.style.left = '0';
+            clone.style.zIndex = '-9999';
+            clone.style.width = originalCard.offsetWidth + 'px'; // 保持与手机端一样的宽度
+            document.body.appendChild(clone);
+
+            // 对克隆的卡片进行截图
+            html2canvas(clone, {
                 scale: 3,
                 useCORS: true,
                 backgroundColor: '#ffffff'
             }).then(canvas => {
-                document.getElementById('view3').scrollTop = scrollTop;
-                callback(canvas.toDataURL('image/png'));
-            }).catch(err => {
-                document.getElementById('view3').scrollTop = scrollTop;
-                alert('生成图片失败，请直接截图。');
-            });
-        }
-
-        function showImageModal() {
-            renderToImage(imgData => {
+                document.body.removeChild(clone); // 截图完毕，移除克隆节点
+                
+                const imgData = canvas.toDataURL('image/png');
                 document.getElementById('result-img').src = imgData;
-                document.getElementById('image-modal').style.display = 'flex';
-            });
-        }
+                modalTip.innerText = originalText;
+                window.isRendering = false;
 
-        function downloadImage() {
-            renderToImage(imgData => {
+                // 如果是普通浏览器，自动触发下载
                 const isWechat = navigator.userAgent.toLowerCase().indexOf('micromessenger') !== -1;
-                if(isWechat) {
-                    document.getElementById('result-img').src = imgData;
-                    document.getElementById('image-modal').style.display = 'flex';
-                } else {
+                if(!isWechat) {
                     const link = document.createElement('a');
                     link.download = `账单_${globalData.customer}.png`;
                     link.href = imgData;
                     link.click();
                 }
+            }).catch(err => {
+                document.body.removeChild(clone);
+                window.isRendering = false;
+                modalTip.innerText = originalText;
+                document.getElementById('image-modal').style.display = 'none';
+                alert('生成图片失败，请直接截图。');
             });
+        }
+
+        // 绑定下载按钮
+        function downloadImage() {
+            showImageModal();
         }
     </script>
 </body>
