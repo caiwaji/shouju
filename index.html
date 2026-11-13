@@ -13,7 +13,7 @@
             --border-color: #eee;
         }
         * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif; }
-        body { background-color: var(--bg-color); color: var(--text-main); padding-bottom: 80px; -webkit-tap-highlight-color: transparent; }
+        body { background-color: var(--bg-color); color: var(--text-main); padding-bottom: 100px; -webkit-tap-highlight-color: transparent; }
         
         /* 顶部导航 */
         .header { background: #fff; padding: 15px; text-align: center; font-size: 18px; font-weight: bold; position: sticky; top: 0; z-index: 10; border-bottom: 1px solid var(--border-color); }
@@ -25,36 +25,50 @@
         .form-label { display: block; font-size: 14px; color: var(--text-sub); margin-bottom: 8px; }
         .required::before { content: "*"; color: red; margin-right: 4px; }
         
-        /* 输入框 */
+        /* 通用输入框 */
         input[type="text"], input[type="number"], input[type="date"] {
             width: 100%; padding: 10px; border: 1px solid var(--border-color); border-radius: 6px; font-size: 15px; outline: none; background: #fafafa; transition: border-color 0.2s;
         }
         input:focus { border-color: var(--primary-color); background: #fff; }
         
-        /* 明细列表 (手机端完美横排适配) */
+        /* ================= 明细列表 (终极手机优化版) ================= */
         .item-row { 
-            display: flex; 
-            gap: 8px; 
-            margin-bottom: 12px; 
-            align-items: center; 
-            border-bottom: 1px dashed var(--border-color); 
-            padding-bottom: 12px;
+            background: #fafafa;
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            padding: 12px;
+            margin-bottom: 12px;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
         }
-        .item-row:last-child { border-bottom: none; margin-bottom: 0; padding-bottom: 0; }
         
-        /* 名称输入框占大头 */
-        .item-row input[type="text"] { flex: 3; padding: 8px; font-size: 14px; }
-        /* 单价和数量输入框 */
-        .item-row input[type="number"] { flex: 1.5; padding: 8px; font-size: 14px; text-align: center; }
+        /* 第一行：名称 和 删除按钮 */
+        .item-row-top {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 10px;
+        }
+        .item-row-top input[type="text"] { flex: 1; background: #fff; font-weight: 500; }
+        .btn-del { background: #ff4d4f; color: #fff; border: none; border-radius: 6px; padding: 10px 14px; font-size: 14px; cursor: pointer; flex: none; }
+
+        /* 第二行：单价、数量、小计 */
+        .item-row-bottom {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 10px;
+        }
+        .input-group { flex: 1; display: flex; align-items: center; background: #fff; border: 1px solid var(--border-color); border-radius: 6px; padding: 0 8px; }
+        .input-group span { font-size: 13px; color: var(--text-sub); margin-right: 5px; }
+        .input-group input[type="number"] { border: none; padding: 8px 0; background: transparent; text-align: right; font-size: 15px; }
         
-        /* 小计金额 */
-        .item-row .subtotal { flex: 2; text-align: right; font-weight: bold; color: var(--primary-color); font-size: 14px; }
-        
-        /* 删除按钮 (变小，靠右) */
-        .btn-del { background: #ff4d4f; color: #fff; border: none; border-radius: 4px; padding: 6px 8px; font-size: 12px; cursor: pointer; flex: none; }
-        
+        .item-row-bottom .subtotal { flex: 1.2; text-align: right; font-weight: bold; color: var(--primary-color); font-size: 16px; }
+        /* ========================================================= */
+
         /* 按钮 */
-        .btn-add { background: #e6f7f1; color: var(--primary-color); border: 1px dashed var(--primary-color); width: 100%; padding: 10px; border-radius: 6px; cursor: pointer; margin-top: 10px; font-size: 14px; font-weight: bold; }
+        .btn-add { background: #e6f7f1; color: var(--primary-color); border: 1px dashed var(--primary-color); width: 100%; padding: 12px; border-radius: 8px; cursor: pointer; margin-top: 5px; font-size: 15px; font-weight: bold; }
         .btn-submit { background: var(--primary-color); color: #fff; border: none; width: calc(100% - 24px); margin: 20px 12px; padding: 15px; border-radius: 8px; font-size: 16px; cursor: pointer; position: fixed; bottom: 0; left: 0; font-weight: bold; box-shadow: 0 4px 12px rgba(0,155,107,0.3); z-index: 100; }
         
         /* 底部合计 */
@@ -109,7 +123,7 @@
 
         <!-- 收据明细 -->
         <div class="card">
-            <label class="form-label">收据明细</label>
+            <label class="form-label" style="font-weight: bold; color: #333;">收据明细</label>
             <div id="items-container">
                 <!-- 动态行将插入到这里 -->
             </div>
@@ -124,7 +138,7 @@
             </div>
             <div class="form-group" style="display:flex; align-items:center; justify-content:space-between; margin-bottom:5px;">
                 <label class="form-label" style="margin:0;">实收金额</label>
-                <input type="number" id="receivedAmount" style="width:50%; text-align:right; font-weight:bold;" value="0" oninput="calculateTotal()">
+                <input type="number" id="receivedAmount" style="width:50%; text-align:right; font-weight:bold; font-size: 18px; color: #333;" value="0" oninput="calculateTotal()">
             </div>
             <div class="total-row">
                 <span>欠款金额</span>
@@ -166,16 +180,16 @@
         <div class="receipt-footer">
             <div>合计大写金额：<span id="prev-chinese-amount"></span></div>
             <div style="display:flex; justify-content:space-between; margin-top:10px;">
-                <span>应收金额：¥ <span id="prev-total"></span></span>
-                <span>实收金额：¥ <span id="prev-received"></span></span>
-                <span>欠款金额：¥ <span id="prev-debt"></span></span>
+                <span>应收：¥<span id="prev-total"></span></span>
+                <span>实收：¥<span id="prev-received"></span></span>
+                <span>欠款：¥<span id="prev-debt"></span></span>
             </div>
             <div style="margin-top:10px;">收款人：<span id="prev-payee"></span></div>
             <div class="status-stamp">账单已结清</div>
         </div>
         <div style="clear:both; text-align:center; margin-top:40px;">
-            <button onclick="window.print()" style="padding:10px 20px; background:var(--primary-color); color:#fff; border:none; border-radius:4px; cursor:pointer; margin-right:10px;">打印 / 保存PDF</button>
-            <button onclick="editMode()" style="padding:10px 20px; background:#ddd; color:#333; border:none; border-radius:4px; cursor:pointer;">返回修改</button>
+            <button onclick="window.print()" style="padding:10px 20px; background:var(--primary-color); color:#fff; border:none; border-radius:4px; cursor:pointer; margin-right:10px; font-weight:bold;">打印 / 保存PDF</button>
+            <button onclick="editMode()" style="padding:10px 20px; background:#eee; color:#333; border:none; border-radius:4px; cursor:pointer;">返回修改</button>
         </div>
     </div>
 
@@ -184,28 +198,37 @@
     <script>
         // 页面加载完成后初始化
         document.addEventListener('DOMContentLoaded', () => {
-            // 设置今天的日期
             const today = new Date().toISOString().split('T')[0];
             document.getElementById('serviceDate').value = today;
             
-            // 默认添加几行明细
+            // 默认添加明细
             addItemRow('红色', 240, 40);
             addItemRow('灰色', 280, 20);
             addItemRow('脱膜油', 950, 1);
             addItemRow('油泵连接套', 40, 2);
         });
 
-        // 添加明细行
+        // 核心修改：生成新的明细行 HTML 结构（采用上下分层布局）
         function addItemRow(name = '', price = '', qty = '') {
             const container = document.getElementById('items-container');
             const row = document.createElement('div');
             row.className = 'item-row';
             row.innerHTML = `
-                <input type="text" placeholder="名称" value="${name}" class="item-name">
-                <input type="number" placeholder="单价" value="${price}" class="item-price" oninput="calculateTotal()">
-                <input type="number" placeholder="数量" value="${qty}" class="item-qty" oninput="calculateTotal()">
-                <div class="subtotal">¥0.00</div>
-                <button class="btn-del" onclick="this.parentElement.remove(); calculateTotal()">删</button>
+                <div class="item-row-top">
+                    <input type="text" placeholder="商品/服务名称" value="${name}" class="item-name">
+                    <button class="btn-del" onclick="this.closest('.item-row').remove(); calculateTotal()">删除</button>
+                </div>
+                <div class="item-row-bottom">
+                    <div class="input-group">
+                        <span>单价</span>
+                        <input type="number" placeholder="0" value="${price}" class="item-price" oninput="calculateTotal()">
+                    </div>
+                    <div class="input-group">
+                        <span>数量</span>
+                        <input type="number" placeholder="0" value="${qty}" class="item-qty" oninput="calculateTotal()">
+                    </div>
+                    <div class="subtotal">¥0.00</div>
+                </div>
             `;
             container.appendChild(row);
             calculateTotal();
@@ -224,19 +247,15 @@
                 total += sub;
             });
 
-            // 更新应收金额
             document.getElementById('display-amount').innerText = '¥ ' + total.toFixed(2);
             
-            // 获取实收金额
             let received = parseFloat(document.getElementById('receivedAmount').value) || 0;
             
-            // 如果用户没改过实收，默认等于应收
             if (received === 0) {
                 document.getElementById('receivedAmount').value = total.toFixed(2);
                 received = total;
             }
 
-            // 计算欠款
             const debt = total - received;
             document.getElementById('debt-amount').innerText = '¥ ' + debt.toFixed(2);
         }
@@ -255,7 +274,6 @@
 
         // 生成预览
         function generatePreview() {
-            // 获取基础数据
             const company = document.getElementById('companyName').value;
             const customer = document.getElementById('customerName').value;
             const contact = document.getElementById('customerContact').value;
@@ -265,7 +283,6 @@
             let tbodyHtml = '';
             let index = 1;
 
-            // 遍历明细
             const rows = document.querySelectorAll('.item-row');
             rows.forEach(row => {
                 const name = row.querySelector('.item-name').value;
@@ -290,7 +307,6 @@
             let received = parseFloat(document.getElementById('receivedAmount').value) || 0;
             let debt = total - received;
 
-            // 填充预览区域
             document.getElementById('prev-company').innerText = company;
             document.getElementById('prev-customer').innerText = customer;
             document.getElementById('prev-contact').innerText = contact;
@@ -302,7 +318,6 @@
             document.getElementById('prev-debt').innerText = debt.toFixed(2);
             document.getElementById('prev-payee').innerText = payee;
 
-            // 如果欠款大于0，修改印章状态
             const stamp = document.querySelector('.status-stamp');
             if (debt > 0) {
                 stamp.innerText = "部分结清 (欠款)";
@@ -314,7 +329,6 @@
                 stamp.style.borderColor = "var(--primary-color)";
             }
 
-            // 切换显示
             document.getElementById('form-area').style.display = 'none';
             document.getElementById('preview-area').style.display = 'block';
             document.getElementById('submit-btn').style.display = 'none';
