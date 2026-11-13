@@ -2,681 +2,633 @@
 <html lang="zh-CN">
 <head>
     <meta charset="UTF-8">
-    <meta name="format-detection" content="telephone=no">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>收据凭证</title>
+    <meta name="format-detection" content="telephone=no">
+    <title>收据账单生成工具</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
     <style>
-        /* 强制锁定字体大小和样式，防止系统放大撑破 */
-        * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, "PingFang SC", "Helvetica Neue", Arial, sans-serif; -webkit-text-size-adjust: 100% !important; }
-        body { background-color: #f4f6f8; color: #333; -webkit-tap-highlight-color: transparent; overflow-x: hidden; }
+        /* 核心防坑指南：防止大字体撑破排版 */
+        * {
+            -webkit-text-size-adjust: 100% !important;
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: -apple-system, BlinkMacSystemFont, "PingFang SC", "Helvetica Neue", Arial, sans-serif;
+        }
+        body {
+            background-color: #f4f6f8;
+            color: #333;
+            font-size: 14px;
+            display: flex;
+            justify-content: center;
+            min-height: 100vh;
+        }
+        .app-container {
+            width: 100%;
+            max-width: 430px;
+            background-color: #f4f6f8;
+            position: relative;
+            display: flex;
+            flex-direction: column;
+        }
+        .view {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: #f4f6f8;
+            display: none;
+            flex-direction: column;
+            overflow-y: auto;
+        }
+        .view.active {
+            display: flex;
+        }
         
-        /* 视图控制 */
-        .page { display: none; min-height: 100vh; padding-bottom: 80px; }
-        .page.active { display: block; }
-
-        /* 顶部公共导航 */
-        .nav-bar { background: #fff; padding: 15px; display: flex; justify-content: space-between; align-items: center; position: sticky; top: 0; z-index: 100; }
-        .nav-title { font-size: 17px; font-weight: 500; position: absolute; left: 50%; transform: translateX(-50%); }
-        .nav-icon { font-size: 20px; color: #333; cursor: pointer; display: flex; align-items: center; gap: 5px; font-weight: 500; }
-        .nav-icon svg { width: 24px; height: 24px; }
+        /* 顶部导航栏 */
+        .nav-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 12px 16px;
+            background-color: #fff;
+            position: sticky;
+            top: 0;
+            z-index: 10;
+            border-bottom: 1px solid #eee;
+        }
+        .nav-header .back-btn { font-size: 18px; color: #333; cursor: pointer; background: none; border: none; }
+        .nav-header .title { font-size: 16px; font-weight: 600; }
+        .nav-header .nav-right { display: flex; align-items: center; gap: 12px; font-size: 14px; color: #333; }
         
-        /* 卡片和行 */
-        .card { background: #fff; margin: 12px; border-radius: 8px; overflow: hidden; }
-        .row { display: flex; justify-content: space-between; align-items: center; padding: 16px 15px; border-bottom: 1px solid #f5f5f5; }
-        .row:last-child { border-bottom: none; }
-        .label { font-size: 15px; color: #333; font-weight: 400; flex-shrink: 0; }
-        .label.req::before { content: "*"; color: #ff4d4f; margin-right: 4px; }
-        .val { font-size: 15px; color: #333; text-align: right; flex-grow: 1; }
-        .val-input { border: none; outline: none; text-align: right; font-size: 15px; color: #333; width: 100%; background: transparent; }
-        .icon-green { color: #009b6b; font-size: 18px; margin-left: 6px; }
+        /* 卡片与表单项 */
+        .card { background-color: #fff; border-radius: 8px; margin: 10px 12px; padding: 12px 16px; }
+        .form-item { display: flex; align-items: center; justify-content: space-between; padding: 12px 0; border-bottom: 1px solid #f5f5f5; }
+        .form-item:last-child { border-bottom: none; }
+        .form-label { color: #333; font-weight: 500; white-space: nowrap; }
+        .form-label.required::before { content: "*"; color: #ff4d4f; margin-right: 2px; }
+        .form-input { border: none; text-align: right; outline: none; font-size: 14px; color: #333; background: transparent; width: 60%; }
         
-        /* ================= 视图1：录入页 ================= */
-        .paste-box { background: #f7f9fa; margin: 12px; border-radius: 6px; padding: 15px; position: relative; }
-        .paste-box textarea { width: 100%; border: none; background: transparent; outline: none; resize: none; font-size: 14px; color: #333; height: 50px; }
-        .paste-box textarea::placeholder { color: #ccc; }
-        .btn-paste { background: #009b6b; color: #fff; border: none; padding: 8px 14px; border-radius: 4px; font-size: 13px; position: absolute; bottom: 12px; right: 12px; cursor: pointer; }
+        /* 按钮 */
+        .btn-green { background-color: #009b6b; color: #fff; border: none; border-radius: 6px; padding: 8px 14px; font-size: 13px; cursor: pointer; }
+        .btn-outline-green { background-color: #fff; color: #009b6b; border: 1px solid #009b6b; border-radius: 4px; padding: 4px 10px; font-size: 12px; cursor: pointer; }
+        .fixed-bottom { margin-top: auto; background-color: #fff; padding: 12px 16px; box-shadow: 0 -2px 10px rgba(0,0,0,0.05); z-index: 20; }
+        .fixed-bottom .btn-block { width: 100%; background-color: #009b6b; color: #fff; border: none; border-radius: 6px; padding: 12px; font-size: 16px; font-weight: 600; cursor: pointer; }
 
-        /* 商品明细列表（完美还原） */
-        .item-row { display: flex; align-items: center; padding: 16px 15px; border-bottom: 1px solid #f5f5f5; }
-        .item-row:last-child { border-bottom: none; }
-        .item-name { flex: 1; border: none; outline: none; font-size: 15px; color: #333; font-weight: 400; min-width: 0; }
-        .item-calc { display: flex; align-items: center; color: #333; font-size: 15px; margin-right: 15px; }
-        .num-input { border: none; outline: none; font-size: 15px; color: #333; text-align: center; width: 45px; font-weight: 400; }
-        .item-total { width: 70px; text-align: right; font-size: 15px; color: #333; }
-        .btn-del { width: 18px; height: 18px; border-radius: 50%; border: 1.2px solid #ccc; color: #ccc; display: flex; justify-content: center; align-items: center; font-size: 14px; margin-left: 10px; cursor: pointer; font-weight: bold; }
-        .btn-add { display: flex; justify-content: center; align-items: center; padding: 16px; color: #009b6b; font-size: 15px; cursor: pointer; background: #fff; border-radius: 0 0 8px 8px; }
+        /* 录入页明细：彻底防错位 */
+        .item-row {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 10px 0;
+            border-bottom: 1px dashed #eee;
+            gap: 6px;
+        }
+        .item-row input.item-name { flex: 1; min-width: 0; border: none; outline: none; font-size: 14px; font-weight: 500; }
+        .item-row .calc-box { display: flex; align-items: center; color: #333; font-size: 14px; }
+        .item-row input.num-input { border: none; outline: none; text-align: center; width: 45px; font-size: 14px; font-weight: 500; }
+        .item-row .item-total { width: 70px; text-align: right; font-weight: 500; font-size: 14px; }
+        .del-item-btn { background: none; color: #ccc; border: 1px solid #ccc; border-radius: 50%; width: 20px; height: 20px; font-size: 14px; cursor: pointer; display: flex; align-items: center; justify-content: center; margin-left: 5px; }
 
-        .btn-same { border: 1px solid #009b6b; color: #009b6b; background: transparent; padding: 2px 8px; border-radius: 4px; font-size: 12px; margin-left: 10px; cursor: pointer; }
-        
-        .upload-box { width: 72px; height: 72px; background: #f7f9fa; border-radius: 6px; display: flex; justify-content: center; align-items: center; color: #ccc; font-size: 28px; font-weight: 300; margin: 12px 15px; cursor: pointer; }
+        /* ================= 预览页表格（严格复刻） ================= */
+        .preview-bill-card { background-color: #fff; border-radius: 8px; margin: 12px; padding: 20px 15px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); }
+        .bill-table { width: 100%; table-layout: fixed; border-collapse: collapse; border: 1px solid #7b5d40; margin-top: 10px; }
+        .bill-table th, .bill-table td { border: 1px solid #7b5d40; padding: 8px 2px; text-align: center; white-space: nowrap; overflow: hidden; font-size: 12px; font-weight: bold; }
+        .bill-table th { font-size: 13px; }
+        .col-no { width: 8%; } .col-name { width: 27%; } .col-unit { width: 10%; } .col-qty { width: 10%; } .col-price { width: 12%; } .col-amt { width: 18%; } .col-remark { width: 15%; }
 
-        .switch { position: relative; display: inline-block; width: 48px; height: 26px; }
-        .switch input { opacity: 0; width: 0; height: 0; }
-        .slider { position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background-color: #ddd; transition: .4s; border-radius: 26px; }
-        .slider:before { position: absolute; content: ""; height: 22px; width: 22px; left: 2px; bottom: 2px; background-color: white; transition: .4s; border-radius: 50%; box-shadow: 0 1px 3px rgba(0,0,0,0.2); }
-        input:checked + .slider { background-color: #009b6b; }
-        input:checked + .slider:before { transform: translateX(22px); }
+        /* 账单履历 */
+        .timeline { position: relative; padding-left: 20px; margin-top: 12px; }
+        .timeline::before { content: ''; position: absolute; left: 5px; top: 4px; bottom: 4px; width: 2px; border-left: 1px dashed #009b6b; }
+        .timeline-item { position: relative; margin-bottom: 15px; display: flex; justify-content: space-between; align-items: center; font-size: 13px; }
+        .timeline-item::before { content: ''; position: absolute; left: -18px; top: 5px; width: 8px; height: 8px; background-color: #009b6b; border-radius: 50%; }
 
-        .stamp-group { display: flex; gap: 12px; padding: 15px; }
-        .stamp-btn { flex: 1; text-align: center; padding: 12px 0; border-radius: 4px; font-size: 15px; background: #f7f9fa; color: #666; cursor: pointer; }
-        .stamp-btn.active { background: #009b6b; color: #fff; }
-
-        .fixed-bottom { position: fixed; bottom: 0; left: 0; width: 100%; padding: 12px; background: #fff; z-index: 100; }
-        .btn-main { background: #009b6b; color: #fff; border: none; width: 100%; padding: 15px; border-radius: 6px; font-size: 16px; font-weight: bold; cursor: pointer; }
-
-        /* ================= 视图2：详情页 ================= */
-        #page-detail { background: #f4f6f8; }
-        .detail-header-nav { display: flex; justify-content: space-between; align-items: center; padding: 15px; }
-        .detail-actions { display: flex; gap: 10px; }
-        .detail-actions span { background: #fff; padding: 6px 12px; border-radius: 20px; font-size: 13px; color: #333; cursor: pointer; }
-
-        .detail-info-card { padding-bottom: 15px; }
-        .tag { padding: 3px 8px; border-radius: 4px; font-size: 12px; color: #fff; }
-        .tag-orange { background: #f0a34c; }
-        .tag-gray { background: #ccd0d5; }
-        .tag-black { background: #333; }
-        .dt-sn { font-size: 14px; color: #666; display: flex; align-items: center; gap: 8px; margin: 15px; }
-        .dt-customer { font-size: 20px; font-weight: bold; margin: 0 15px 15px 15px; display: flex; justify-content: space-between; align-items: center; }
-        .dt-meta { font-size: 14px; color: #999; margin: 0 15px; line-height: 2; display: flex; align-items: center; gap: 5px; }
-        
-        .dt-list-title { font-size: 16px; font-weight: bold; margin: 15px 15px 10px 15px; }
-        .dt-item { display: flex; padding: 12px 15px; border-bottom: 1px solid #f5f5f5; font-size: 15px; }
-        .dt-item:last-child { border-bottom: none; }
-        .dt-item .name { color: #999; flex: 1; }
-        .dt-item .calc { color: #333; width: 110px; text-align: right; margin-right: 15px; }
-        .dt-item .price { color: #333; width: 70px; text-align: right; }
-
-        .dt-summary { padding: 0 15px 15px 15px; border-top: 1px dashed #eee; margin-top: 5px; padding-top: 15px; }
-        .dt-summary .row { border: none; padding: 8px 0; }
-        .dt-summary .label { color: #999; font-size: 15px; }
-        .dt-summary .val { font-size: 15px; font-weight: bold; }
-
-        .history-title { font-size: 16px; font-weight: bold; margin: 15px 15px 10px 15px; }
-        .history-box { padding: 0 15px 15px 25px; position: relative; }
-        .history-line { position: absolute; left: 18px; top: 5px; bottom: 20px; width: 1px; border-left: 1px dashed #009b6b; }
-        .history-item { position: relative; margin-bottom: 15px; display: flex; justify-content: space-between; font-size: 14px; }
-        .history-item:last-child { margin-bottom: 0; }
-        .history-item .dot { position: absolute; left: -10px; top: 3px; width: 8px; height: 8px; border-radius: 50%; background: #009b6b; }
-        .history-item .time { color: #ccc; }
-
-        .detail-bottom-bar { position: fixed; bottom: 0; left: 0; width: 100%; background: #fff; display: flex; padding: 10px 15px; border-top: 1px solid #eee; z-index: 100; align-items: center; }
-        .btn-home { display: flex; flex-direction: column; align-items: center; font-size: 12px; color: #666; width: 60px; cursor: pointer; }
-        .btn-preview { flex: 1; background: #009b6b; color: #fff; border-radius: 6px; font-size: 16px; font-weight: bold; display: flex; justify-content: center; align-items: center; padding: 15px; margin-left: 15px; cursor: pointer; }
-
-        /* ================= 视图3：预览页 (绿底白卡) ================= */
-        #page-preview { background: linear-gradient(180deg, #009b6b 0%, #0ca875 15%, #f4f6f8 15%); padding-bottom: 80px; }
-        .pv-top-bar { padding: 15px; display: flex; justify-content: space-between; color: #fff; font-size: 17px; font-weight: bold; }
-        .pv-success-icon { text-align: center; padding: 10px 0 20px 0; color: #fff; }
-        .pv-success-icon span { font-size: 40px; display: block; margin-bottom: 10px; }
-        .pv-success-icon h2 { font-size: 22px; letter-spacing: 1px; }
-
-        /* 核心账单卡片 - 用于生成图片 */
-        #receipt-card { background: #fff; margin: 0 12px; border-radius: 8px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); padding: 20px 15px; }
-        /* 强制固定字体和排版 */
-        #receipt-card * { font-family: "PingFang SC", "Microsoft YaHei", sans-serif; color: #333; }
-        
-        .rc-header { text-align: center; position: relative; margin-bottom: 25px; }
-        .rc-title { font-size: 20px; font-weight: bold; letter-spacing: 1px; }
-        .rc-no { position: absolute; right: 0; bottom: -20px; font-size: 11px; font-weight: bold; color: #7b5d40; }
-        .rc-line { border-bottom: 3px double #7b5d40; margin-top: 15px; }
-
-        .rc-info-row { display: flex; justify-content: flex-start; gap: 15px; margin-bottom: 8px; font-size: 13px; font-weight: bold; }
-        .rc-info-row span { display: flex; }
-        .rc-info-row .lbl { width: 60px; flex-shrink: 0; }
-        .rc-info-row .val { flex: 1; }
-
-        /* 账单表格 */
-        .rc-table { width: 100%; border-collapse: collapse; border: 1px solid #7b5d40; table-layout: fixed; margin-top: 15px; }
-        .rc-table th, .rc-table td { border: 1px solid #7b5d40; padding: 10px 2px; text-align: center; font-size: 12px; font-weight: bold; white-space: nowrap; overflow: hidden; }
-        .rc-table th { font-size: 13px; }
-        .rc-table th:nth-child(1), .rc-table td:nth-child(1) { width: 8%; }
-        .rc-table th:nth-child(2), .rc-table td:nth-child(2) { width: 27%; }
-        .rc-table th:nth-child(3), .rc-table td:nth-child(3) { width: 10%; }
-        .rc-table th:nth-child(4), .rc-table td:nth-child(4) { width: 10%; }
-        .rc-table th:nth-child(5), .rc-table td:nth-child(5) { width: 12%; }
-        .rc-table th:nth-child(6), .rc-table td:nth-child(6) { width: 18%; }
-        .rc-table th:nth-child(7), .rc-table td:nth-child(7) { width: 15%; }
-
-        /* 合计行 */
-        .rc-total-row { display: flex; border: 1px solid #7b5d40; border-top: none; font-size: 12px; font-weight: bold; }
-        .rc-total-row .l { width: 45px; border-right: 1px solid #7b5d40; display: flex; align-items: center; justify-content: center; }
-        .rc-total-row .m { flex: 1; padding: 10px; border-right: 1px solid #7b5d40; display: flex; align-items: center; }
-        .rc-total-row .r { width: 130px; padding: 10px; display: flex; justify-content: space-between; }
-
-        /* 底部信息 */
-        .rc-footer { margin-top: 20px; font-size: 13px; font-weight: bold; line-height: 1.8; }
-        .rc-f-row { display: flex; justify-content: space-between; margin-bottom: 5px; }
-        .rc-f-row span { white-space: nowrap; }
-
-        .pv-click-hint { text-align: center; color: #009b6b; font-size: 15px; font-weight: bold; margin: 20px 0; cursor: pointer; }
-
-        /* 底部悬浮栏 */
-        .pv-bottom-bar { position: fixed; bottom: 0; left: 0; width: 100%; background: #fff; display: flex; padding: 10px 15px; border-top: 1px solid #eee; z-index: 100; align-items: center; gap: 10px; }
-        .pv-btn-icon { display: flex; flex-direction: column; align-items: center; font-size: 12px; color: #666; cursor: pointer; width: 50px; }
-        .pv-btn-icon svg { width: 24px; height: 24px; margin-bottom: 2px; }
-        .pv-btn-outline { flex: 1; display: flex; align-items: center; justify-content: center; border: 1px solid #009b6b; color: #009b6b; border-radius: 6px; font-size: 15px; font-weight: bold; padding: 12px 0; cursor: pointer; }
-        .pv-btn-solid { flex: 1.5; display: flex; align-items: center; justify-content: center; background: #009b6b; color: #fff; border-radius: 6px; font-size: 15px; font-weight: bold; padding: 12px 0; cursor: pointer; border: none; }
-
-        /* ================= 放大图片弹窗 ================= */
-        #image-modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.85); z-index: 999; flex-direction: column; justify-content: center; align-items: center; }
-        #image-modal img { max-width: 95%; max-height: 85%; object-fit: contain; }
-        #image-modal p { color: #fff; margin-top: 20px; font-size: 16px; }
+        /* 弹窗 */
+        .modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.85); z-index: 1000; display: none; flex-direction: column; justify-content: center; align-items: center; color: #fff; text-align: center; padding: 20px; }
+        .modal-overlay img { max-width: 95%; max-height: 75vh; border-radius: 6px; background: #fff; margin-bottom: 15px; }
+        .modal-tip { font-size: 16px; margin-bottom: 15px; font-weight: 500; }
+        .modal-close { background: #009b6b; color: #fff; border: none; padding: 10px 30px; border-radius: 20px; font-size: 15px; cursor: pointer; }
     </style>
 </head>
 <body>
+<div class="app-container">
 
-    <!-- ================= 视图 1：录入页 ================= -->
-    <div id="page-input" class="page active">
-        <div class="nav-bar">
-            <div class="nav-icon" onclick="alert('返回')">〈</div>
-            <div class="nav-title">收据凭证</div>
-            <div class="nav-icon" style="letter-spacing:2px; font-size:18px;">··· ⊙</div>
+    <!-- ==================== 视图 1：录入页 ==================== -->
+    <div id="view1" class="view active">
+        <div class="nav-header">
+            <button class="back-btn" onclick="alert('当前已是首页')">〈</button>
+            <div class="title">收据凭证</div>
+            <div class="nav-right">••• ⊙</div>
         </div>
 
-        <div class="card" style="padding: 0;">
-            <div class="row">
-                <div class="label">收据抬头</div>
-                <div class="val" style="display:flex; justify-content:flex-end; align-items:center;">
-                    <input type="text" id="in-company" class="val-input" value="西安七彩阳光涂料有限公司" style="width:auto;">
-                    <span class="icon-green" style="font-size:12px; margin-left:5px;">▼</span>
+        <div class="card">
+            <div class="form-item">
+                <span class="form-label">收据抬头</span>
+                <span style="color: #009b6b; font-weight: 500; display: flex; align-items: center; gap: 4px;">
+                    西安七彩阳光涂料有限公司 <span style="font-size: 10px;">▼</span>
+                </span>
+            </div>
+            <div style="background-color: #f9fafb; border-radius: 6px; padding: 10px; margin-top: 8px;">
+                <textarea id="pasteInfoText" placeholder="粘贴信息, 自动拆分客户名称、电话和地址" style="width: 100%; border: none; background: transparent; resize: none; font-size: 13px; outline: none; height: 50px;"></textarea>
+                <div style="display: flex; justify-content: flex-end; margin-top: 4px;">
+                    <button class="btn-green" style="padding: 4px 12px; font-size: 12px;" onclick="parsePastedInfo()">粘贴并识别</button>
                 </div>
             </div>
-            <div class="paste-box">
-                <textarea placeholder="粘贴信息，自动拆分客户名称、电话和地址"></textarea>
-                <button class="btn-paste">粘贴并识别</button>
-            </div>
-        </div>
-
-        <div class="card">
-            <div class="row">
-                <div class="label req">客户名称</div>
-                <div class="val" style="display:flex; justify-content:flex-end; align-items:center;">
-                    <input type="text" id="in-customer" class="val-input" value="老庙瓦厂" style="width:auto;">
-                    <span class="icon-green">📇</span>
+            <div class="form-item" style="margin-top: 10px;">
+                <span class="form-label required">客户名称</span>
+                <div style="display: flex; align-items: center; gap: 6px; width: 60%; justify-content: flex-end;">
+                    <input type="text" id="inputCustomerName" class="form-input" style="width: 85%;" value="老庙瓦厂">
+                    <span style="color: #009b6b; font-size: 16px;">📇</span>
                 </div>
             </div>
-            <div class="row">
-                <div class="label">联系电话</div>
-                <input type="text" id="in-phone" class="val-input" placeholder="请填写客户联系方式" value="18602967882">
+            <div class="form-item">
+                <span class="form-label">联系电话</span>
+                <input type="text" id="inputPhone" class="form-input" placeholder="请填写联系方式" value="18602967882">
             </div>
         </div>
 
         <div class="card">
-            <div class="row" style="border-bottom:none; padding-bottom:5px;"><div class="label" style="font-weight:bold;">收据明细</div></div>
-            <div id="items-container"></div>
-            <div class="btn-add" onclick="addItem()">+ 添加明细</div>
+            <div style="font-weight: 600; margin-bottom: 8px; display: flex; justify-content: space-between;">
+                <span>收据明细</span>
+            </div>
+            <div id="itemsContainer"></div>
+            <div style="text-align: center; padding: 12px 0; color: #009b6b; font-weight: 500; cursor: pointer;" onclick="addItemRow()">+ 添加明细</div>
         </div>
 
         <div class="card">
-            <div class="row">
-                <div class="label req">应收金额</div>
-                <input type="number" id="in-total" class="val-input" value="0" readonly style="font-weight:bold;">
+            <div class="form-item">
+                <span class="form-label required">应收金额</span>
+                <input type="text" id="displayReceivable" class="form-input" readonly style="font-weight: 600;" value="0.00">
             </div>
-            <div class="row">
-                <div class="label">实收金额</div>
-                <div class="val" style="display:flex; justify-content:flex-end; align-items:center;">
-                    <input type="number" id="in-received" class="val-input" value="0" oninput="calcTotal()" style="font-weight:bold; width:120px;">
-                    <button class="btn-same" onclick="setSame()">同上</button>
+            <div class="form-item">
+                <span class="form-label">实收金额</span>
+                <div style="display: flex; align-items: center; gap: 8px; width: 60%; justify-content: flex-end;">
+                    <input type="number" id="inputPaid" class="form-input" style="width: 70%;" value="0" oninput="calcDebt()">
+                    <button class="btn-outline-green" onclick="fillSameAmount()">同上</button>
                 </div>
             </div>
-            <div class="row">
-                <div class="label">欠款金额</div>
-                <div class="val" id="in-debt" style="font-size:15px; color:#333;">0.00</div>
+            <div class="form-item">
+                <span class="form-label">欠款金额</span>
+                <span id="displayDebt" style="font-weight: 600; color: #333;">0.00</span>
             </div>
         </div>
 
         <div class="card">
-            <div class="row">
-                <div class="label">服务时间</div>
-                <div class="val" style="display:flex; justify-content:flex-end; align-items:center; gap:10px;">
-                    <input type="date" id="in-date" class="val-input" style="width:110px; font-weight:bold;">
-                    <span class="icon-green" style="color:#009b6b;">📅</span>
-                    <input type="time" id="in-time" class="val-input" style="width:80px; font-weight:bold;">
-                    <span class="icon-green" style="color:#009b6b;">🕒</span>
+            <div class="form-item">
+                <span class="form-label">服务时间</span>
+                <div style="display: flex; align-items: center; gap: 6px; font-size: 13px;">
+                    <input type="date" id="inputDate" style="border: none; background: transparent; font-size: 13px; color: #333;">
+                    <span style="color:#009b6b;">📅</span>
+                    <input type="time" id="inputTime" style="border: none; background: transparent; font-size: 13px; color: #333;">
+                    <span style="color:#009b6b;">🕒</span>
                 </div>
             </div>
-            <div class="row">
-                <div class="label">客户地址</div>
-                <div class="val" style="display:flex; justify-content:flex-end; align-items:center;">
-                    <input type="text" id="in-address" class="val-input" placeholder="选择地址" value="西安市阎良区">
-                    <span class="icon-green">📍</span>
+            <div class="form-item">
+                <span class="form-label">客户地址</span>
+                <div style="display: flex; align-items: center; gap: 4px; color: #333; font-size: 13px;">
+                    <input type="text" id="inputAddress" class="form-input" style="width: 160px;" value="西安市阎良区" placeholder="选择地址">
+                    <span style="color: #009b6b;">📍</span>
                 </div>
             </div>
-            <div class="row" style="border-bottom:none; padding-bottom:0;">
-                <div class="label">备注信息</div>
-                <button class="btn-paste" style="position:static; padding:4px 8px;">选模板</button>
-            </div>
-            <div class="paste-box" style="margin-top:10px; margin-bottom:10px;">
-                <textarea placeholder="举例：客户购买了一套护肤品，退换货政策：7天内可退换。" style="height:70px;"></textarea>
-            </div>
-        </div>
-
-        <div class="card">
-            <div class="row" style="border-bottom:none; padding-bottom:0;">
-                <div class="label">记录凭证 <span style="font-size:13px; color:#999; font-weight:normal;">上传服务凭证、物流单等</span></div>
-            </div>
-            <div class="upload-box">+</div>
-            <div class="row">
-                <div class="label">收款人</div>
-                <input type="text" id="in-payee" class="val-input" value="耿健">
-            </div>
-        </div>
-
-        <div class="card">
-            <div class="row">
-                <div class="label">是否需要客户签字</div>
-                <label class="switch"><input type="checkbox"><span class="slider"></span></label>
-            </div>
-            <div class="row" style="border-bottom:none; padding-bottom:0;">
-                <div class="label" style="font-weight:bold;">选择印章种类</div>
-            </div>
-            <div class="stamp-group">
-                <div class="stamp-btn" onclick="selectStamp(this)">水印</div>
-                <div class="stamp-btn" onclick="selectStamp(this)">印章</div>
-                <div class="stamp-btn active" onclick="selectStamp(this)">不使用</div>
+            <div class="form-item">
+                <span class="form-label">收款人</span>
+                <input type="text" id="inputPayee" class="form-input" value="耿健">
             </div>
         </div>
 
         <div class="fixed-bottom">
-            <button class="btn-main" onclick="goToDetail()">保存</button>
+            <button class="btn-block" onclick="saveReceipt()">保存</button>
         </div>
     </div>
 
-    <!-- ================= 视图 2：详情页 ================= -->
-    <div id="page-detail" class="page">
-        <div class="detail-header-nav">
-            <div class="nav-icon" onclick="goToInput()">〈 详情</div>
-            <div class="detail-actions">
-                <span>🗑 删除</span>
-                <span>📄 复制账单</span>
+
+    <!-- ==================== 视图 2：详情页 ==================== -->
+    <div id="view2" class="view">
+        <div class="nav-header">
+            <button class="back-btn" onclick="switchView('view1')">〈 详情</button>
+            <div class="nav-right">
+                <span onclick="alert('账单已删除'); switchView('view1');" style="cursor: pointer;">🗑 删除</span>
+                <span onclick="alert('账单已复制');" style="cursor: pointer;">📋 复制账单</span>
             </div>
         </div>
 
         <div class="card">
-            <div class="dt-sn">
-                <span class="tag tag-orange">凭证</span>
-                <span id="dt-no">2092435870236803072</span>
-                <span class="tag tag-gray" style="margin-left:auto;">已结清</span>
-                <span class="tag tag-black">未确认</span>
+            <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px;">
+                <div style="display: flex; align-items: center; gap: 8px;">
+                    <span style="background: #fa8c16; color: #fff; font-size: 11px; padding: 2px 6px; border-radius: 4px;">凭证</span>
+                    <span id="detailOrderNo" style="font-size: 13px; color: #666;">---</span>
+                </div>
+                <div style="display: flex; gap: 6px;">
+                    <span id="detailStatusBadge" style="background: #f0f0f0; color: #666; font-size: 11px; padding: 2px 6px; border-radius: 4px;">已结清</span>
+                    <span style="background: #222; color: #fff; font-size: 11px; padding: 2px 6px; border-radius: 4px;">未确认</span>
+                </div>
             </div>
-            <div class="dt-customer">
-                <span id="dt-customer">老庙瓦厂</span>
-                <span style="font-size:14px; color:#ccc; font-weight:normal;">@5vll</span>
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
+                <span id="detailCustomerName" style="font-size: 20px; font-weight: bold;">---</span>
+                <span style="font-size: 12px; color: #ccc;">@5vll</span>
             </div>
-            <div class="dt-meta">
-                <span>📍</span> <span id="dt-address">西安市阎良区</span>
-            </div>
-            <div class="dt-meta">
-                <span>🕒</span> <span id="dt-time">2026-08-26 10:15:37</span>
+            <div style="font-size: 13px; color: #666; display: flex; flex-direction: column; gap: 6px;">
+                <div>📍 <span id="detailAddress">---</span></div>
+                <div>🕒 <span id="detailTime">---</span></div>
             </div>
         </div>
 
-        <div class="card" style="padding-top:5px;">
-            <div class="dt-list-title">收据明细</div>
-            <div id="dt-items-list"></div>
-            
-            <div class="dt-summary">
-                <div class="row">
-                    <div class="label">应收金额</div>
-                    <div class="val">¥ <span id="dt-total">0.00</span></div>
+        <div class="card">
+            <div style="font-weight: 600; font-size: 16px; margin-bottom: 10px;">收据明细</div>
+            <div id="detailItemsList"></div>
+            <div style="border-top: 1px dashed #eee; margin-top: 10px; padding-top: 15px; display: flex; flex-direction: column; gap: 12px; font-size: 15px;">
+                <div style="display: flex; justify-content: space-between;">
+                    <span style="color: #999;">应收金额</span>
+                    <span id="detailReceivableAmt" style="font-weight: bold;">¥ 0.00</span>
                 </div>
-                <div class="row">
-                    <div class="label">实收金额</div>
-                    <div class="val">¥ <span id="dt-received">0.00</span></div>
+                <div style="display: flex; justify-content: space-between;">
+                    <span style="color: #999;">实收金额</span>
+                    <span id="detailPaidAmt" style="font-weight: bold;">¥ 0.00</span>
                 </div>
-                <div class="row">
-                    <div class="label">欠款金额</div>
-                    <div class="val" style="color:#333;">¥ <span id="dt-debt">0.00</span> <span style="color:#999; font-weight:normal; margin-left:5px;">| 已结清</span></div>
+                <div style="display: flex; justify-content: space-between;">
+                    <span style="color: #999;">欠款金额</span>
+                    <div>
+                        <span id="detailDebtAmt" style="font-weight: bold;">¥ 0.00</span>
+                        <span id="detailStatusText" style="color: #999; font-size: 13px; margin-left: 6px;">| 已结清</span>
+                    </div>
                 </div>
             </div>
         </div>
 
         <div class="card">
-            <div class="history-title">账单履历</div>
-            <div class="history-box">
-                <div class="history-line"></div>
-                <div class="history-item">
-                    <span class="dot"></span>
-                    <span style="font-weight:bold;">主账号更改结算状态</span>
-                    <span class="time">2026-09-19 15:17:43</span>
+            <div style="font-weight: 600; font-size: 16px; margin-bottom: 8px;">账单履历</div>
+            <div class="timeline">
+                <div class="timeline-item">
+                    <span style="color: #333; font-weight: bold;">主账号更改结算状态</span>
+                    <span style="color: #ccc; font-size: 13px;">2026-09-19 15:17:43</span>
                 </div>
-                <div class="history-item">
-                    <span class="dot"></span>
-                    <span style="font-weight:bold;">修改账单</span>
-                    <span class="time">2026-09-19 15:17:30</span>
-                </div>
-                <div class="history-item">
-                    <span class="dot"></span>
-                    <span style="font-weight:bold;">发送客户</span>
-                    <span class="time">2026-08-26 10:16:15</span>
+                <div class="timeline-item">
+                    <span style="color: #333; font-weight: bold;">修改账单</span>
+                    <span style="color: #ccc; font-size: 13px;">2026-09-19 15:17:30</span>
                 </div>
             </div>
         </div>
 
-        <div class="detail-bottom-bar">
-            <div class="btn-home" onclick="goToInput()">
-                <span style="font-size:24px;">⌂</span>回首页
+        <div class="fixed-bottom" style="display: flex; align-items: center; gap: 12px;">
+            <div onclick="switchView('view1')" style="display: flex; flex-direction: column; align-items: center; cursor: pointer; color: #333; font-size: 11px; min-width: 44px;">
+                <span style="font-size: 20px; margin-bottom:2px;">🏠</span>
+                <span>回首页</span>
             </div>
-            <div class="btn-preview" onclick="goToPreview()">预览/发送客户</div>
+            <button class="btn-block" style="flex: 1;" onclick="switchView('view3')">预览/发送客户</button>
         </div>
     </div>
 
-    <!-- ================= 视图 3：预览页 ================= -->
-    <div id="page-preview" class="page">
-        <div class="pv-top-bar">
-            <div class="nav-icon" onclick="goToDetail()" style="color:#fff;">〈</div>
-            <div>服务账单</div>
-            <div style="letter-spacing:2px;">··· ⊙</div>
-        </div>
-        
-        <div class="pv-success-icon">
-            <span>✅</span>
-            <h2 id="pv-status">账单已结清</h2>
+
+    <!-- ==================== 视图 3：预览页 ==================== -->
+    <div id="view3" class="view" style="background: linear-gradient(180deg, #009b6b 0%, #009b6b 150px, #f4f6f8 150px);">
+        <div class="nav-header" style="background: transparent; border-bottom: none; color: #fff;">
+            <button class="back-btn" onclick="switchView('view2')" style="color: #fff;">〈</button>
+            <div class="title" style="color: #fff;">服务账单</div>
+            <div class="nav-right" style="color: #fff;">••• ⊙</div>
         </div>
 
-        <!-- 截图目标区域 -->
-        <div id="receipt-card">
-            <div class="rc-header">
-                <div class="rc-title" id="pv-company">西安七彩阳光涂料有限公司</div>
-                <div class="rc-line"></div>
-                <div class="rc-no" id="pv-no">DZ2026082610164057</div>
+        <div style="display: flex; flex-direction: column; align-items: center; color: #fff; padding: 10px 0 20px 0;">
+            <div style="width: 36px; height: 36px; background: #fff; color: #009b6b; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 20px; font-weight:bold; margin-bottom: 8px;">✓</div>
+            <div id="previewStatusTitle" style="font-size: 20px; font-weight: bold;">账单已结清</div>
+        </div>
+
+        <!-- 核心账单卡片 -->
+        <div id="billCardToCapture" class="preview-bill-card">
+            <div style="text-align: center; font-size: 18px; font-weight: bold; color: #333; margin-bottom: 4px;">西安七彩阳光涂料有限公司</div>
+            <!-- 双横线 -->
+            <div style="border-bottom: 3px double #7b5d40; width: 90%; margin: 6px auto 10px auto;"></div>
+            <div style="display: flex; justify-content: flex-end; font-size: 11px; color: #7b5d40; font-weight:bold; margin-bottom: 12px; margin-right:5%;">
+                <span id="previewOrderNo">---</span>
             </div>
-            
-            <div class="rc-info-row">
-                <span class="lbl">客户：</span>
-                <span class="val" id="pv-customer" style="flex:1;"></span>
-                <span class="lbl" style="width:auto;">时间：</span>
-                <span class="val" id="pv-date" style="flex:1;"></span>
+
+            <div style="display: flex; justify-content: space-between; font-size: 13px; font-weight:bold; color: #333; margin-bottom: 6px;">
+                <div>客户：<span id="previewCustomer"></span></div>
+                <div>时间：<span id="previewDate"></span></div>
             </div>
-            <div class="rc-info-row">
-                <span class="lbl">电话：</span>
-                <span class="val" id="pv-phone"></span>
+            <div style="display: flex; justify-content: space-between; font-size: 13px; font-weight:bold; color: #333; margin-bottom: 12px;">
+                <div>电话：<span id="previewPhone"></span></div>
+                <div>地址：<span id="previewAddress"></span></div>
             </div>
-            <div class="rc-info-row" style="margin-bottom:15px;">
-                <span class="lbl">客户地址：</span>
-                <span class="val" id="pv-address"></span>
-            </div>
-            
-            <table class="rc-table">
+
+            <!-- 表格 -->
+            <table class="bill-table">
                 <thead>
                     <tr>
-                        <th>序号</th><th>商品/服务名称</th><th>单位</th>
-                        <th>数量</th><th>单价</th><th>金额</th><th>备注/说明</th>
+                        <th class="col-no">序号</th>
+                        <th class="col-name">商品/服务名称</th>
+                        <th class="col-unit">单位</th>
+                        <th class="col-qty">数量</th>
+                        <th class="col-price">单价</th>
+                        <th class="col-amt">金额</th>
+                        <th class="col-remark">备注/说明</th>
                     </tr>
                 </thead>
-                <tbody id="pv-tbody"></tbody>
+                <tbody id="previewTableBody"></tbody>
             </table>
 
-            <div class="rc-total-row">
-                <div class="l">合计</div>
-                <div class="m">大写金额：<span id="pv-chinese" style="margin-left:5px;"></span></div>
-                <div class="r"><span>(小写)</span><span id="pv-total">¥ 0.00</span></div>
-            </div>
-            
-            <div class="rc-footer">
-                <div class="rc-f-row">
-                    <span>收款人：<span id="pv-payee"></span></span>
-                    <span>应收金额：¥ <span id="pv-rcv-total"></span></span>
-                    <span>实收金额：¥ <span id="pv-rcv"></span></span>
-                    <span>欠款金额：¥ <span id="pv-debt"></span></span>
+            <!-- 合计行 -->
+            <div style="border: 1px solid #7b5d40; border-top: none; display: flex; font-size: 12px; font-weight:bold; background: #fff; white-space:nowrap;">
+                <div style="padding: 8px 4px; border-right: 1px solid #7b5d40; width: 45px; text-align:center;">合计</div>
+                <div style="padding: 8px 6px; border-right: 1px solid #7b5d40; flex: 1; text-align:left; overflow:hidden;">
+                    大写金额：<span id="previewCapitalAmt">零元整</span>
                 </div>
-                <div class="rc-f-row" style="margin-top: 5px;">
-                    <span>电话：18602967882</span>
-                    <span>地址：西安市阎良区</span>
+                <div style="padding: 8px 6px; width: 140px; display:flex; justify-content:space-between;">
+                    <span>(小写)</span> <span id="previewLowercaseAmt">¥ 0.00</span>
+                </div>
+            </div>
+
+            <!-- 底部信息 -->
+            <div style="margin-top: 15px; font-size: 13px; font-weight:bold; color: #333; display: flex; flex-direction: column; gap: 6px;">
+                <div style="display: flex; justify-content: space-between;">
+                    <div>收款人：<span id="previewPayee"></span></div>
+                    <div>应收金额：<span id="previewRecAmt"></span></div>
+                    <div>实收金额：<span id="previewPaidAmt"></span></div>
+                    <div>欠款金额：<span id="previewDebtAmt"></span></div>
+                </div>
+                <div style="display: flex; gap: 40px;">
+                    <div>电话：<span id="previewPhoneFooter"></span></div>
+                    <div>地址：<span id="previewAddressFooter"></span></div>
                 </div>
             </div>
         </div>
 
-        <div class="pv-click-hint" onclick="showImageModal()">👁 点击查看大图</div>
-        
-        <!-- 占位，防止底部栏遮挡 -->
-        <div style="height: 80px;"></div>
+        <div style="text-align: center; font-size: 15px; color: #009b6b; font-weight:bold; margin: 15px 0; cursor: pointer;" onclick="generateReceiptImage()">
+            👁 点击查看大图
+        </div>
 
-        <div class="pv-bottom-bar">
-            <div class="pv-btn-icon" onclick="goToInput()">
-                <svg viewBox="0 0 24 24" fill="none" stroke="#333" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path></svg>
-                回首页
+        <div class="fixed-bottom" style="display: flex; align-items: center; justify-content: space-between; gap: 8px; padding: 10px 12px;">
+            <div onclick="switchView('view1')" style="display: flex; flex-direction: column; align-items: center; cursor: pointer; color: #333; font-size: 11px;">
+                <span style="font-size: 18px;">🏠</span>
+                <span>回首页</span>
             </div>
-            <div class="pv-btn-icon" onclick="downloadImage()">
-                <svg viewBox="0 0 24 24" fill="none" stroke="#333" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>
-                保存
+            <div onclick="generateReceiptImage()" style="display: flex; flex-direction: column; align-items: center; cursor: pointer; color: #333; font-size: 11px;">
+                <span style="font-size: 18px;">💾</span>
+                <span>保存</span>
             </div>
-            <div class="pv-btn-outline" onclick="alert('扫描功能请使用原生APP')">📷 扫码领取</div>
-            <button class="pv-btn-solid" onclick="downloadImage()">
-                <span style="font-size:18px; margin-right:5px;">💬</span> 转发微信
-            </button>
+            <button style="flex: 1; background: #fff; border: 1px solid #009b6b; color: #009b6b; border-radius: 6px; padding: 10px; font-size: 14px; font-weight: 600; cursor: pointer;">扫码领取</button>
+            <button style="flex: 1.2; background: #009b6b; border: none; color: #fff; border-radius: 6px; padding: 10px; font-size: 14px; font-weight: 600; cursor: pointer;" onclick="generateReceiptImage()">转发微信</button>
         </div>
     </div>
 
-    <!-- 放大图片弹窗 -->
-    <div id="image-modal" onclick="this.style.display='none'">
-        <img id="result-img" src="">
-        <p>长按图片保存到手机相册</p>
-    </div>
+</div>
 
-    <script>
-        // 初始化时间
+<!-- 生成图片预览弹窗 -->
+<div id="imageModal" class="modal-overlay">
+    <div class="modal-tip" id="modalTipText">长按图片保存到手机相册</div>
+    <div id="modalImgContainer"></div>
+    <button class="modal-close" onclick="closeModal()">关闭</button>
+</div>
+
+<script>
+    let receiptData = {
+        items: [
+            { name: "红色", price: 240, qty: 40, unit: "" },
+            { name: "灰色", price: 280, qty: 20, unit: "" },
+            { name: "脱膜油", price: 950, qty: 1, unit: "" },
+            { name: "油泵连接套", price: 40, qty: 2, unit: "" }
+        ]
+    };
+
+    // 初始化时间
+    window.onload = function() {
         const now = new Date();
-        document.getElementById('in-date').value = now.toISOString().split('T')[0];
-        document.getElementById('in-time').value = now.toTimeString().slice(0,5);
-        document.getElementById('dt-time').innerText = `${document.getElementById('in-date').value} ${document.getElementById('in-time').value}:00`;
+        document.getElementById('inputDate').value = now.toISOString().split('T')[0];
+        document.getElementById('inputTime').value = now.toTimeString().slice(0,5);
+        renderEntryItems();
+    };
 
-        // 初始化明细
-        addItem('红色', 240, 40);
-        addItem('灰色', 280, 20);
-        addItem('脱膜油', 950, 1);
-        addItem('油泵连接套', 40, 2);
-
-        // 生成一行明细
-        function addItem(name = '', price = '', qty = '') {
-            const container = document.getElementById('items-container');
+    // 渲染录入页明细（防错位版）
+    function renderEntryItems() {
+        const container = document.getElementById('itemsContainer');
+        container.innerHTML = '';
+        receiptData.items.forEach((item, index) => {
             const row = document.createElement('div');
             row.className = 'item-row';
             row.innerHTML = `
-                <input type="text" class="item-name" value="${name}" placeholder="名称">
-                <div class="item-calc">
-                    <input type="number" class="num-input item-price" value="${price}" oninput="calcTotal()">
+                <input type="text" class="item-name" placeholder="商品名称" value="${item.name}" oninput="updateItem(${index}, 'name', this.value)">
+                <div class="calc-box">
+                    <input type="number" class="num-input item-price" value="${item.price}" oninput="updateItem(${index}, 'price', this.value)">
                     <span>*</span>
-                    <input type="number" class="num-input item-qty" value="${qty}" oninput="calcTotal()">
+                    <input type="number" class="num-input item-qty" value="${item.qty}" oninput="updateItem(${index}, 'qty', this.value)">
                 </div>
-                <div class="item-total">0.00</div>
-                <div class="btn-del" onclick="this.parentElement.remove(); calcTotal()">-</div>
+                <div class="item-total" id="subtotal_${index}">0.00</div>
+                <div class="del-item-btn" onclick="removeItem(${index})">-</div>
             `;
             container.appendChild(row);
-            calcTotal();
+            updateSubtotal(index);
+        });
+        calcTotals();
+    }
+
+    function addItemRow() {
+        receiptData.items.push({ name: "", price: 0, qty: 1, unit: "" });
+        renderEntryItems();
+    }
+
+    function removeItem(index) {
+        if (receiptData.items.length <= 1) { alert('至少保留一条明细'); return; }
+        receiptData.items.splice(index, 1);
+        renderEntryItems();
+    }
+
+    function updateItem(index, field, value) {
+        if (field === 'price' || field === 'qty') {
+            receiptData.items[index][field] = parseFloat(value) || 0;
+        } else {
+            receiptData.items[index][field] = value;
+        }
+        updateSubtotal(index);
+        calcTotals();
+    }
+
+    function updateSubtotal(index) {
+        const item = receiptData.items[index];
+        const subEl = document.getElementById(`subtotal_${index}`);
+        if (subEl) subEl.innerText = (item.price * item.qty).toFixed(2);
+    }
+
+    function calcTotals() {
+        let total = 0;
+        receiptData.items.forEach(item => { total += (item.price * item.qty); });
+        document.getElementById('displayReceivable').value = total.toFixed(2);
+        calcDebt();
+    }
+
+    function fillSameAmount() {
+        document.getElementById('inputPaid').value = document.getElementById('displayReceivable').value;
+        calcDebt();
+    }
+
+    function calcDebt() {
+        const rec = parseFloat(document.getElementById('displayReceivable').value) || 0;
+        const paid = parseFloat(document.getElementById('inputPaid').value) || 0;
+        const debt = Math.max(0, rec - paid);
+        document.getElementById('displayDebt').innerText = debt.toFixed(2);
+    }
+
+    function parsePastedInfo() {
+        const text = document.getElementById('pasteInfoText').value;
+        if (!text) { alert('请先粘贴内容'); return; }
+        alert('（演示）解析成功！');
+    }
+
+    // 切换视图
+    function switchView(viewId) {
+        if (viewId === 'view2' || viewId === 'view3') {
+            syncDataToViews();
+        }
+        document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
+        document.getElementById(viewId).classList.add('active');
+        window.scrollTo(0,0);
+    }
+
+    // 数据同步
+    function syncDataToViews() {
+        const customer = document.getElementById('inputCustomerName').value;
+        const phone = document.getElementById('inputPhone').value;
+        const address = document.getElementById('inputAddress').value;
+        const date = document.getElementById('inputDate').value;
+        const time = document.getElementById('inputTime').value;
+        const payee = document.getElementById('inputPayee').value;
+        const rec = parseFloat(document.getElementById('displayReceivable').value) || 0;
+        const paid = parseFloat(document.getElementById('inputPaid').value) || 0;
+        const debt = parseFloat(document.getElementById('displayDebt').innerText) || 0;
+
+        // 动态生成单号
+        const sn = 'DZ' + date.replace(/-/g, '') + Math.floor(Math.random()*100000000).toString().padStart(8,'0');
+        document.getElementById('detailOrderNo').innerText = sn;
+        document.getElementById('previewOrderNo').innerText = sn;
+
+        // 详情页
+        document.getElementById('detailCustomerName').innerText = customer;
+        document.getElementById('detailAddress').innerText = address || '未填写地址';
+        document.getElementById('detailTime').innerText = `${date} ${time}:00`;
+        document.getElementById('detailReceivableAmt').innerText = `¥ ${rec.toFixed(2)}`;
+        document.getElementById('detailPaidAmt').innerText = `¥ ${paid.toFixed(2)}`;
+        document.getElementById('detailDebtAmt').innerText = `¥ ${debt.toFixed(2)}`;
+
+        if (debt <= 0) {
+            document.getElementById('detailStatusText').innerText = '| 已结清';
+            document.getElementById('detailStatusBadge').innerText = '已结清';
+        } else {
+            document.getElementById('detailStatusText').innerText = '| 未结清';
+            document.getElementById('detailStatusBadge').innerText = '未结清';
         }
 
-        // 计算总价
-        function calcTotal() {
-            let total = 0;
-            document.querySelectorAll('#items-container .item-row').forEach(row => {
-                const price = parseFloat(row.querySelector('.item-price').value) || 0;
-                const qty = parseFloat(row.querySelector('.item-qty').value) || 0;
-                const sub = price * qty;
-                row.querySelector('.item-total').innerText = sub.toFixed(2);
-                total += sub;
-            });
+        const detailList = document.getElementById('detailItemsList');
+        detailList.innerHTML = '';
+        receiptData.items.forEach(item => {
+            if(!item.name && !item.price && !item.qty) return;
+            const row = document.createElement('div');
+            row.style.cssText = 'display: flex; justify-content: space-between; align-items: center; padding: 12px 0; font-size: 15px; border-bottom: 1px solid #f5f5f5;';
+            row.innerHTML = `
+                <span style="color: #999; flex:1;">${item.name}</span>
+                <span style="font-weight: bold; width: 110px; text-align: right; margin-right:15px;">${item.price.toFixed(2)}*${item.qty}</span>
+                <span style="font-weight: bold; width: 70px; text-align: right;">${(item.price * item.qty).toFixed(2)}</span>
+            `;
+            detailList.appendChild(row);
+        });
 
-            document.getElementById('in-total').value = total.toFixed(2);
-            
-            let received = parseFloat(document.getElementById('in-received').value) || 0;
-            if (received === 0 && total > 0) {
-                document.getElementById('in-received').value = total.toFixed(2);
-                received = total;
-            }
-            document.getElementById('in-debt').innerText = (total - received).toFixed(2);
+        // 预览页
+        document.getElementById('previewCustomer').innerText = customer;
+        document.getElementById('previewDate').innerText = date;
+        document.getElementById('previewPhone').innerText = phone;
+        document.getElementById('previewAddress').innerText = address;
+        document.getElementById('previewPhoneFooter').innerText = phone;
+        document.getElementById('previewAddressFooter').innerText = address;
+        document.getElementById('previewPayee').innerText = payee;
+        document.getElementById('previewRecAmt').innerText = `¥ ${rec.toFixed(2)}`;
+        document.getElementById('previewPaidAmt').innerText = `¥ ${paid.toFixed(2)}`;
+        document.getElementById('previewDebtAmt').innerText = `¥ ${debt.toFixed(2)}`;
+        document.getElementById('previewLowercaseAmt').innerText = `¥ ${rec.toFixed(2)}`;
+        
+        // 动态大写金额
+        document.getElementById('previewCapitalAmt').innerText = toChineseMoney(rec.toFixed(2));
+
+        if (debt <= 0) {
+            document.getElementById('previewStatusTitle').innerText = '账单已结清';
+        } else {
+            document.getElementById('previewStatusTitle').innerText = `部分结清 (含欠款)`;
         }
 
-        function setSame() {
-            document.getElementById('in-received').value = document.getElementById('in-total').value;
-            calcTotal();
+        const previewTableBody = document.getElementById('previewTableBody');
+        previewTableBody.innerHTML = '';
+        let rowCount = 0;
+        receiptData.items.forEach(item => {
+            if(!item.name && !item.price && !item.qty) return;
+            rowCount++;
+            const tr = document.createElement('tr');
+            tr.innerHTML = `
+                <td class="col-no">${rowCount}</td>
+                <td class="col-name">${item.name}</td>
+                <td class="col-unit"></td>
+                <td class="col-qty">${item.qty}</td>
+                <td class="col-price">${item.price}</td>
+                <td class="col-amt">${(item.price * item.qty).toFixed(2)}</td>
+                <td class="col-remark"></td>
+            `;
+            previewTableBody.appendChild(tr);
+        });
+        // 强制补齐5行
+        for (let i = rowCount; i < 5; i++) {
+            const tr = document.createElement('tr');
+            tr.innerHTML = `<td class="col-no">${i + 1}</td><td></td><td></td><td></td><td></td><td></td><td></td>`;
+            previewTableBody.appendChild(tr);
         }
+    }
 
-        function selectStamp(btn) {
-            document.querySelectorAll('.stamp-btn').forEach(el => el.classList.remove('active'));
-            btn.classList.add('active');
-        }
+    function saveReceipt() {
+        alert('保存成功！');
+        switchView('view2');
+    }
 
-        // 人民币大写
-        function toChineseMoney(n) {
-            if (!/^(0|[1-9]\d*)(\.\d+)?$/.test(n)) return "";
-            let unit = "仟佰拾亿仟佰拾万仟佰拾元角分", str = "";
-            n += "00";
-            let p = n.indexOf('.');
-            if (p >= 0) n = n.substring(0, p) + n.substr(p+1, 2);
-            unit = unit.substr(unit.length - n.length);
-            for (let i=0; i < n.length; i++) str += '零壹贰叁肆伍陆柒捌玖'.charAt(n.charAt(i)) + unit.charAt(i);
-            return str.replace(/零(仟|佰|拾|角)/g, "零").replace(/(零)+/g, "零").replace(/零(万|亿|元)/g, "$1").replace(/(亿)万|壹(拾)/g, "$1$2").replace(/^元零?|零分/g, "").replace(/元$/g, "元整");
-        }
+    // 完美的人民币大写转换
+    function toChineseMoney(n) {
+        if (!/^(0|[1-9]\d*)(\.\d+)?$/.test(n)) return "数据非法";
+        let unit = "仟佰拾亿仟佰拾万仟佰拾元角分", str = "";
+        n += "00";
+        let p = n.indexOf('.');
+        if (p >= 0) n = n.substring(0, p) + n.substr(p+1, 2);
+        unit = unit.substr(unit.length - n.length);
+        for (let i=0; i < n.length; i++) str += '零壹贰叁肆伍陆柒捌玖'.charAt(n.charAt(i)) + unit.charAt(i);
+        return str.replace(/零(仟|佰|拾|角)/g, "零").replace(/(零)+/g, "零").replace(/零(万|亿|元)/g, "$1").replace(/(亿)万|壹(拾)/g, "$1$2").replace(/^元零?|零分/g, "").replace(/元$/g, "元整");
+    }
 
-        // 页面切换逻辑
-        let globalData = {};
+    // 生成图片
+    function generateReceiptImage() {
+        const target = document.getElementById('billCardToCapture');
+        html2canvas(target, {
+            scale: 3,
+            backgroundColor: '#ffffff',
+            useCORS: true
+        }).then(canvas => {
+            const imgData = canvas.toDataURL('image/png');
+            const container = document.getElementById('modalImgContainer');
+            container.innerHTML = '';
+            const img = document.createElement('img');
+            img.src = imgData;
+            container.appendChild(img);
 
-        function goToInput() {
-            document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
-            document.getElementById('page-input').classList.add('active');
-        }
-
-        function goToDetail() {
-            // 收集数据
-            globalData = {
-                company: document.getElementById('in-company').value,
-                customer: document.getElementById('in-customer').value,
-                phone: document.getElementById('in-phone').value,
-                address: document.getElementById('in-address').value,
-                date: document.getElementById('in-date').value,
-                time: document.getElementById('in-time').value,
-                payee: document.getElementById('in-payee').value,
-                received: parseFloat(document.getElementById('in-received').value) || 0,
-                total: parseFloat(document.getElementById('in-total').value) || 0,
-                items: []
-            };
-            globalData.debt = globalData.total - globalData.received;
-
-            document.querySelectorAll('#items-container .item-row').forEach(row => {
-                globalData.items.push({
-                    name: row.querySelector('.item-name').value,
-                    price: parseFloat(row.querySelector('.item-price').value) || 0,
-                    qty: parseFloat(row.querySelector('.item-qty').value) || 0
-                });
-            });
-
-            // 填充详情页数据
-            document.getElementById('dt-customer').innerText = globalData.customer;
-            document.getElementById('dt-address').innerText = globalData.address;
-            document.getElementById('dt-time').innerText = `${globalData.date} ${globalData.time}:00`;
-            document.getElementById('dt-total').innerText = globalData.total.toFixed(2);
-            document.getElementById('dt-received').innerText = globalData.received.toFixed(2);
-            document.getElementById('dt-debt').innerText = globalData.debt.toFixed(2);
-
-            let html = '';
-            globalData.items.forEach(item => {
-                if(item.name || item.price || item.qty) {
-                    html += `
-                        <div class="dt-item">
-                            <div class="name">${item.name}</div>
-                            <div class="calc">${item.price.toFixed(2)}*${item.qty}</div>
-                            <div class="price">${(item.price*item.qty).toFixed(2)}</div>
-                        </div>
-                    `;
-                }
-            });
-            document.getElementById('dt-items-list').innerHTML = html;
-
-            // 切换视图
-            document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
-            document.getElementById('page-detail').classList.add('active');
-            window.scrollTo(0,0);
-        }
-
-        function goToPreview() {
-            // 填充预览页数据
-            document.getElementById('pv-company').innerText = globalData.company;
-            document.getElementById('pv-customer').innerText = globalData.customer;
-            document.getElementById('pv-date').innerText = globalData.date;
-            document.getElementById('pv-phone').innerText = globalData.phone;
-            document.getElementById('pv-address').innerText = globalData.address;
-            document.getElementById('pv-payee').innerText = globalData.payee;
-            
-            document.getElementById('pv-total').innerText = '¥ ' + globalData.total.toFixed(2);
-            document.getElementById('pv-chinese').innerText = toChineseMoney(globalData.total.toFixed(2));
-            document.getElementById('pv-rcv-total').innerText = globalData.total.toFixed(2);
-            document.getElementById('pv-rcv').innerText = globalData.received.toFixed(2);
-            document.getElementById('pv-debt').innerText = globalData.debt.toFixed(2);
-
-            document.getElementById('pv-no').innerText = 'DZ' + globalData.date.replace(/-/g, '') + Math.floor(Math.random()*100000000).toString().padStart(8,'0');
-
-            if(globalData.debt > 0) {
-                document.getElementById('pv-status').innerText = "部分结清 (含欠款)";
+            const isWeChat = /micromessenger/i.test(navigator.userAgent);
+            if (isWeChat) {
+                document.getElementById('modalTipText').innerText = "长按图片保存到手机相册";
             } else {
-                document.getElementById('pv-status').innerText = "账单已结清";
+                document.getElementById('modalTipText').innerText = "图片已生成，已自动下载";
+                const a = document.createElement('a');
+                a.href = imgData;
+                a.download = `收据_${Date.now()}.png`;
+                a.click();
             }
+            document.getElementById('imageModal').style.display = 'flex';
+        }).catch(err => {
+            alert('生成图片失败，请截图保存');
+        });
+    }
 
-            let html = '', index = 1;
-            globalData.items.forEach(item => {
-                if(item.name || item.price || item.qty) {
-                    html += `
-                        <tr>
-                            <td>${index++}</td><td>${item.name}</td><td></td><td>${item.qty}</td>
-                            <td>${item.price.toFixed(2).replace('.00','')}</td><td>${(item.price*item.qty).toFixed(2)}</td><td></td>
-                        </tr>
-                    `;
-                }
-            });
-            for(let i = index; i <= 5; i++) {
-                html += `<tr><td>${i}</td><td></td><td></td><td></td><td></td><td></td><td></td></tr>`;
-            }
-            document.getElementById('pv-tbody').innerHTML = html;
-
-            // 切换视图
-            document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
-            document.getElementById('page-preview').classList.add('active');
-            window.scrollTo(0,0);
-        }
-
-        // 核心功能：把卡片渲染成图片
-        function renderToImage(callback) {
-            const element = document.getElementById('receipt-card');
-            html2canvas(element, {
-                scale: 3, // 高清
-                useCORS: true,
-                backgroundColor: '#ffffff',
-                scrollY: 0,
-                scrollX: 0
-            }).then(canvas => {
-                const imgData = canvas.toDataURL('image/png');
-                callback(imgData);
-            }).catch(err => {
-                alert('生成图片失败，请直接截图。');
-            });
-        }
-
-        // 点击“放大图片”/“保存”
-        function showImageModal() {
-            renderToImage(imgData => {
-                document.getElementById('result-img').src = imgData;
-                document.getElementById('image-modal').style.display = 'flex';
-            });
-        }
-
-        // 点击底部的“保存”和“转发微信”
-        function downloadImage() {
-            renderToImage(imgData => {
-                const isWechat = navigator.userAgent.toLowerCase().indexOf('micromessenger') !== -1;
-                if(isWechat) {
-                    // 微信里必须拉起弹窗，让用户长按保存
-                    document.getElementById('result-img').src = imgData;
-                    document.getElementById('image-modal').style.display = 'flex';
-                } else {
-                    // 普通浏览器直接下载
-                    const link = document.createElement('a');
-                    link.download = `账单_${globalData.customer}.png`;
-                    link.href = imgData;
-                    link.click();
-                }
-            });
-        }
-    </script>
+    function closeModal() {
+        document.getElementById('imageModal').style.display = 'none';
+    }
+</script>
 </body>
 </html>
