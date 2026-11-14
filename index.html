@@ -64,7 +64,7 @@
         .stamp-btn { flex: 1; text-align: center; padding: 12px 0; border-radius: 4px; font-size: 15px; background: #f7f9fa; color: #666; cursor: pointer; }
         .stamp-btn.active { background: #00a870; color: #fff; }
         
-        /* 底部固定按钮 */
+        /* 底部固定按钮（使用 fixed 固定在屏幕底部） */
         .bottom-bar { position: fixed; bottom: 0; left: 0; width: 100%; background: #fff; padding: 12px 16px; z-index: 100; border-top: 1px solid #eee; display: flex; justify-content: center; }
         .bottom-bar-inner { width: 100%; max-width: 480px; }
         .btn-block { background: #00a870; color: #fff; border: none; width: 100%; padding: 14px; border-radius: 8px; font-size: 16px; font-weight: bold; cursor: pointer; }
@@ -115,34 +115,15 @@
             box-shadow: 0 4px 15px rgba(0,0,0,0.08); overflow: hidden;
             z-index: 2; position: relative; cursor: pointer; height: 380px;
         }
-        
-        .box { 
-            width: 800px; 
-            background: #ffffff; 
-            padding: 40px 30px; 
-            transform: scale(0.5); 
-            transform-origin: top left; 
-        }
-
-        /* 顶部栏，处理单号重叠 */
-        .top-bar { 
-            display: flex; 
-            justify-content: space-between; 
-            align-items: flex-end; 
-            position: relative; 
-            margin-bottom: 20px; 
-            width: 100%;
-        }
-        .title { font-size: 34px; font-weight: bold; color: #000; letter-spacing: 2px; flex: 1; text-align: center; }
-        .billid { position: absolute; right: 0; bottom: 5px; font-size: 18px; color: #7b5d40; font-weight: bold; white-space: nowrap; }
-        
+        .box { width: 800px; background: #ffffff; padding: 40px 30px; transform: scale(0.5); transform-origin: top left; }
+        .top-bar { display: flex; justify-content: space-between; align-items: flex-end; position: relative; margin-bottom: 20px; }
+        .title { font-size: 34px; font-weight: bold; color: #000; letter-spacing: 2px; width: 100%; text-align: center; }
+        .billid { position: absolute; right: 0; bottom: 5px; font-size: 18px; color: #7b5d40; font-weight: bold; }
         .line { width: 100%; border-bottom: 4px double #000; margin-bottom: 25px; }
-        
-        .info-row { display: flex; justify-content: space-between; width: 100%; font-size: 18px; color: #333; margin-bottom: 15px; font-weight: bold; white-space: nowrap; }
+        .info-row { display: flex; justify-content: space-between; font-size: 18px; color: #333333; margin-bottom: 15px; font-weight: bold; }
         .info-row span.lbl { color: #7b5d40; }
         .info-row span.val { color: #000; }
 
-        /* 表格严格固定 */
         table { width: 100%; border-collapse: collapse; background: #ffffff; table-layout: fixed; border: 2px solid #7b5d40; }
         table th, table td { border: 1px solid #7b5d40; padding: 14px 4px; text-align: center; font-size: 18px; color: #000; font-weight: bold; white-space: nowrap; overflow: hidden; }
         table th { color: #7b5d40; font-weight: bold; }
@@ -157,10 +138,7 @@
         .total-row td { padding: 15px 10px; font-size: 18px; }
         .total-left { text-align: left; color: #7b5d40; }
         .total-right { text-align: right; color: #7b5d40; }
-        
-        /* 底部信息强制拆分两排，防挤压 */
-        .bottom { display: flex; flex-direction: column; width: 100%; margin-top: 25px; font-size: 18px; line-height: 2; color: #7b5d40; font-weight: bold; white-space: nowrap; }
-        .f-row { display: flex; justify-content: space-between; width: 100%; margin-bottom: 5px; }
+        .bottom { margin-top: 25px; font-size: 18px; line-height: 2; color: #7b5d40; font-weight: bold; display: flex; flex-direction: column; gap: 5px; }
         .bottom .val { color: #000; }
 
         .pv-click-hint { text-align: center; color: #00a870; font-size: 15px; font-weight: bold; margin: 20px 0; cursor: pointer; }
@@ -173,7 +151,7 @@
         .pv-btn-solid { flex: 1.2; display: flex; align-items: center; justify-content: center; background: #00a870; color: #fff; border-radius: 6px; font-size: 14px; font-weight: bold; padding: 12px 0; cursor: pointer; border: none; white-space: nowrap; }
 
         #image-modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: #0b0b0b; z-index: 99999; flex-direction: column; justify-content: center; align-items: center; }
-        #image-modal img { max-width: 95%; max-height: 80%; border-radius: 4px; background: #fff; object-fit: contain; }
+        #image-modal img { max-width: 95%; max-height: 80%; border-radius: 4px; background: #fff; }
         #image-modal p { color: #fff; margin-top: 20px; font-size: 16px; font-weight: bold; }
         .btn-close-modal { margin-top: 20px; background: #333; color: #fff; border: 1px solid #555; padding: 10px 30px; border-radius: 20px; font-size: 15px; cursor: pointer; }
     </style>
@@ -385,37 +363,37 @@
                 </table>
 
                 <div class="bottom">
-                    <div class="f-row">
-                        <span><span class="lbl">收款人：</span><span class="val" id="pv-payee"></span></span>
-                        <span><span class="lbl">应收金额：</span><span class="val" id="pv-rcv-total"></span></span>
-                        <span><span class="lbl">实收金额：</span><span class="val" id="pv-rcv"></span></span>
-                        <span><span class="lbl">欠款金额：</span><span class="val" id="pv-debt"></span></span>
+                    <div>
+                        <span class="lbl">收款人：</span><span class="val" id="pv-payee"></span>　
+                        <span class="lbl">应收金额：</span><span class="val" id="pv-rcv-total"></span>　
+                        <span class="lbl">实收金额：</span><span class="val" id="pv-rcv"></span>　
+                        <span class="lbl">欠款金额：</span><span class="val" id="pv-debt"></span>
                     </div>
-                    <div class="f-row" style="margin-top: 10px;">
-                        <span><span class="lbl">电话：</span><span class="val" id="pv-footer-phone"></span></span>
-                        <span><span class="lbl">地址：</span><span class="val" id="pv-footer-address"></span></span>
+                    <div>
+                        <span class="lbl">电话：</span><span class="val" id="pv-footer-phone"></span>　
+                        <span class="lbl">地址：</span><span class="val" id="pv-footer-address"></span>
                     </div>
                 </div>
             </div>
         </div>
 
-        <div class="pv-click-hint" onclick="showImageModal()">👁 点击查看大图/保存</div>
+        <div class="pv-click-hint" onclick="showImageModal()">👁 点击查看大图</div>
 
         <div class="pv-bottom-bar">
             <div class="pv-bottom-bar-inner">
                 <div class="pv-btn-icon" onclick="switchView('view1')"><span>⌂</span>回首页</div>
-                <div class="pv-btn-icon" onclick="showImageModal()"><span>📥</span>保存</div>
+                <div class="pv-btn-icon" onclick="downloadImage()"><span>📥</span>保存</div>
                 <div class="pv-btn-outline" onclick="alert('请使用微信扫一扫')">扫码领取</div>
-                <button class="pv-btn-solid" onclick="showImageModal()"><span style="font-size:16px; margin-right:4px;">💬</span> 转发微信</button>
+                <button class="pv-btn-solid" onclick="downloadImage()"><span style="font-size:16px; margin-right:4px;">💬</span> 转发微信</button>
             </div>
         </div>
     </div>
 
     <!-- 图片弹窗 -->
-    <div id="image-modal">
+    <div id="image-modal" onclick="this.style.display='none'">
         <img id="result-img" src="">
-        <p id="modal-tip">正在生成图片...</p>
-        <button class="btn-close-modal" onclick="document.getElementById('image-modal').style.display='none'">关闭</button>
+        <p>长按图片保存到手机相册</p>
+        <button class="btn-close-modal" onclick="this.parentElement.style.display='none'">关闭</button>
     </div>
 
 <script>
@@ -604,39 +582,31 @@
     function showImageModal() {
         if(window.isRendering) return;
         window.isRendering = true;
-        
-        const modal = document.getElementById('image-modal');
-        const modalImg = document.getElementById('result-img');
-        const modalTip = document.getElementById('modal-tip');
-        
-        modalImg.src = ''; 
+        const modalTip = document.querySelector('#image-modal p');
+        const originalText = modalTip.innerText;
         modalTip.innerText = "正在生成高清图片...";
-        modal.style.display = 'flex';
+        document.getElementById('image-modal').style.display = 'flex';
 
         const originalBox = document.getElementById('capture-box');
         const clone = originalBox.cloneNode(true);
         
-        // 克隆节点，放到屏幕外，取消缩放
         clone.style.position = 'absolute';
         clone.style.top = '0';
         clone.style.left = '0';
         clone.style.zIndex = '-9999';
         clone.style.transform = 'none'; 
         clone.style.margin = '0';
-        clone.style.backgroundColor = '#ffffff';
         document.body.appendChild(clone);
 
-        // 核心修复：强制指定截图宽度为 800px，确保表格绝对不变形
         html2canvas(clone, {
             scale: 2, 
             useCORS: true,
-            backgroundColor: '#ffffff',
-            width: 800 
+            backgroundColor: '#ffffff'
         }).then(canvas => {
             document.body.removeChild(clone); 
             const imgData = canvas.toDataURL('image/png');
-            modalImg.src = imgData;
-            modalTip.innerText = "长按图片保存到手机相册";
+            document.getElementById('result-img').src = imgData;
+            modalTip.innerText = originalText;
             window.isRendering = false;
 
             const isWechat = navigator.userAgent.toLowerCase().indexOf('micromessenger') !== -1;
@@ -649,8 +619,14 @@
         }).catch(err => {
             document.body.removeChild(clone);
             window.isRendering = false;
-            modalTip.innerText = "生成图片失败，请直接截图";
+            modalTip.innerText = originalText;
+            document.getElementById('image-modal').style.display = 'none';
+            alert('生成图片失败，请直接截图。');
         });
+    }
+
+    function downloadImage() {
+        showImageModal();
     }
 </script>
 </body>
