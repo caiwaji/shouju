@@ -18,13 +18,9 @@
         
         body { background-color: #f4f6f8; color: #333; font-size: 15px; padding-bottom: 80px; }
         
-        /* 【核心修复】视图控制：使用绝对定位隐藏，彻底防止 iOS 下 fixed 元素穿透 */
+        /* 视图控制 */
         .view { display: none; width: 100%; max-width: 480px; margin: 0 auto; background-color: #f4f6f8; position: relative; }
         .view.active { display: block; }
-        /* 隐藏非激活视图下的所有悬浮组件，防止穿透 */
-        .view:not(.active) .bottom-bar,
-        .view:not(.active) .detail-bottom-bar,
-        .view:not(.active) .pv-bottom-bar { display: none !important; }
 
         /* ================= 视图1：录入页 ================= */
         .navbar { background: #fff; padding: 14px 16px; display: flex; justify-content: space-between; align-items: center; position: sticky; top: 0; z-index: 10; }
@@ -119,19 +115,20 @@
         }
         .box { width: 800px; background: #ffffff; padding: 40px 30px; transform: scale(0.5); transform-origin: top left; }
         
-        /* 修复单号重叠 */
-        .top-bar { display: flex; justify-content: space-between; align-items: flex-end; position: relative; margin-bottom: 20px; }
-        .title { font-size: 34px; font-weight: bold; color: #000; letter-spacing: 2px; width: 100%; text-align: center; padding: 0 160px; box-sizing: border-box; }
+        /* 【修复1】标题与单号布局：彻底解决标题换行和单号重叠 */
+        .top-bar { display: flex; justify-content: center; align-items: center; position: relative; margin-bottom: 20px; width: 100%; }
+        .title { font-size: 34px; font-weight: bold; color: #000; letter-spacing: 2px; white-space: nowrap; margin-right: 100px; }
         .billid { position: absolute; right: 0; bottom: 5px; font-size: 18px; color: #7b5d40; font-weight: bold; white-space: nowrap; }
         
         .line { width: 100%; border-bottom: 4px double #000; margin-bottom: 25px; }
-        .info-row { display: flex; justify-content: space-between; font-size: 18px; color: #333333; margin-bottom: 15px; font-weight: bold; }
+        .info-row { display: flex; justify-content: space-between; font-size: 18px; color: #333333; margin-bottom: 15px; font-weight: bold; white-space: nowrap; }
         .info-row span.lbl { color: #7b5d40; }
         .info-row span.val { color: #000; }
 
-        table { width: 100%; border-collapse: collapse; background: #ffffff; table-layout: fixed; border: 2px solid #7b5d40; }
-        table th, table td { border: 1px solid #7b5d40; padding: 14px 4px; text-align: center; font-size: 18px; color: #000; font-weight: bold; white-space: nowrap; overflow: hidden; }
-        table th { color: #7b5d40; font-weight: bold; }
+        /* 【修复2】强行复活棕色边框样式 */
+        table { width: 100%; border-collapse: collapse; background: #ffffff; table-layout: fixed; border: 2px solid #7b5d40 !important; }
+        table th, table td { border: 1px solid #7b5d40 !important; padding: 14px 4px; text-align: center; font-size: 18px; color: #000; font-weight: bold; white-space: nowrap; overflow: hidden; }
+        table th { color: #7b5d40 !important; font-weight: bold; }
         table th:nth-child(1), table td:nth-child(1) { width: 8%; }
         table th:nth-child(2), table td:nth-child(2) { width: 23%; }
         table th:nth-child(3), table td:nth-child(3) { width: 9%; }
@@ -144,9 +141,9 @@
         .total-left { text-align: left; color: #7b5d40; }
         .total-right { text-align: right; color: #7b5d40; }
         
-        /* 修复底部竖排 */
-        .bottom { margin-top: 25px; font-size: 18px; line-height: 2; color: #7b5d40; font-weight: bold; display: flex; flex-direction: column; gap: 5px; }
-        .bottom > div { display: flex; justify-content: space-between; width: 100%; white-space: nowrap; }
+        /* 【修复3】底部强制横向排版 */
+        .bottom { margin-top: 25px; font-size: 18px; line-height: 2; color: #7b5d40; font-weight: bold; display: flex; flex-direction: column; gap: 5px; width: 100%; white-space: nowrap; }
+        .bottom > div { display: flex; justify-content: space-between; width: 100%; }
         .bottom .val { color: #000; }
 
         .pv-click-hint { text-align: center; color: #00a870; font-size: 15px; font-weight: bold; margin: 20px 0; cursor: pointer; }
@@ -456,10 +453,9 @@
     let globalData = {};
 
     function switchView(viewId) {
-        // 强制清理所有页面的状态，防止 iOS 下的渲染幽灵穿透
         document.querySelectorAll('.view').forEach(v => {
             v.classList.remove('active');
-            v.style.display = 'none';
+            v.style.display = 'none'; 
         });
         const activeView = document.getElementById(viewId);
         activeView.classList.add('active');
@@ -571,11 +567,9 @@
         switchView('view3');
     }
 
-    // 【终极修复】绝对不影响页面上的 DOM 树
     function showImageModal() {
         if(window.isRendering) return;
         window.isRendering = true;
-        
         const modalTip = document.querySelector('#image-modal p');
         const originalText = modalTip.innerText;
         modalTip.innerText = "正在生成高清图片...";
@@ -584,46 +578,44 @@
         const originalBox = document.getElementById('capture-box');
         const clone = originalBox.cloneNode(true);
         
-        // 创建一个极简的、隔离的沙盒容器，用完即毁
-        const cloneWrapper = document.createElement('div');
-        cloneWrapper.style.cssText = 'position: fixed; top: 0; left: 0; width: 800px; z-index: -9999; opacity: 0; pointer-events: none;';
-        
-        // 强行取消克隆体的缩放，让它以真实的 800px 尺寸渲染
-        clone.style.transform = 'none';
-        clone.style.margin = '0';
-        
-        cloneWrapper.appendChild(clone);
-        document.body.appendChild(cloneWrapper);
+        // 核心：克隆并重置样式，通过固定宽度和 z-index 隔离，防止页面被拉伸乱套
+        clone.style.position = 'fixed';
+        clone.style.top = '0';
+        clone.style.left = '0';
+        clone.style.zIndex = '-9999';
+        clone.style.transform = 'none'; 
+        clone.style.width = '800px'; // 强制锁定宽度
+        clone.style.backgroundColor = '#ffffff';
+        clone.style.pointerEvents = 'none';
+        clone.style.opacity = '0';
+        document.body.appendChild(clone);
 
-        // 稍微延迟，确保渲染完成
-        setTimeout(() => {
-            html2canvas(clone, {
-                scale: 2, 
-                useCORS: true,
-                backgroundColor: '#ffffff',
-                width: 800 // 强制锁定 800px 宽度
-            }).then(canvas => {
-                document.body.removeChild(cloneWrapper); // 销毁沙盒
-                const imgData = canvas.toDataURL('image/png');
-                document.getElementById('result-img').src = imgData;
-                modalTip.innerText = originalText;
-                window.isRendering = false;
+        html2canvas(clone, {
+            scale: 2, 
+            useCORS: true,
+            backgroundColor: '#ffffff',
+            width: 800 // 强制截图宽度
+        }).then(canvas => {
+            document.body.removeChild(clone); 
+            const imgData = canvas.toDataURL('image/png');
+            document.getElementById('result-img').src = imgData;
+            modalTip.innerText = originalText;
+            window.isRendering = false;
 
-                const isWechat = navigator.userAgent.toLowerCase().indexOf('micromessenger') !== -1;
-                if(!isWechat) {
-                    const link = document.createElement('a');
-                    link.download = `账单_${globalData.customer}.png`;
-                    link.href = imgData;
-                    link.click();
-                }
-            }).catch(err => {
-                if(cloneWrapper.parentNode) document.body.removeChild(cloneWrapper);
-                window.isRendering = false;
-                modalTip.innerText = originalText;
-                document.getElementById('image-modal').style.display = 'none';
-                alert('生成图片失败，请直接截图。');
-            });
-        }, 50);
+            const isWechat = navigator.userAgent.toLowerCase().indexOf('micromessenger') !== -1;
+            if(!isWechat) {
+                const link = document.createElement('a');
+                link.download = `账单_${globalData.customer}.png`;
+                link.href = imgData;
+                link.click();
+            }
+        }).catch(err => {
+            document.body.removeChild(clone);
+            window.isRendering = false;
+            modalTip.innerText = originalText;
+            document.getElementById('image-modal').style.display = 'none';
+            alert('生成图片失败，请直接截图。');
+        });
     }
 
     function downloadImage() {
