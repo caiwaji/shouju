@@ -15,10 +15,9 @@
             padding: 0;
             font-family: -apple-system, BlinkMacSystemFont, "PingFang SC", "Microsoft YaHei", sans-serif;
         }
-        
+        
         body { background-color: #f4f6f8; color: #333; font-size: 15px; padding-bottom: 80px; }
-        
-        /* 视图控制：使用原生流式布局，绝对不白屏 */
+        
         .view { display: none; width: 100%; max-width: 480px; margin: 0 auto; background-color: #f4f6f8; }
         .view.active { display: block; }
 
@@ -26,7 +25,7 @@
         .navbar { background: #fff; padding: 14px 16px; display: flex; justify-content: space-between; align-items: center; position: sticky; top: 0; z-index: 10; }
         .nav-title { font-size: 17px; font-weight: 500; position: absolute; left: 50%; transform: translateX(-50%); }
         .nav-icon { font-size: 18px; color: #333; cursor: pointer; display: flex; align-items: center; gap: 5px; }
-        
+        
         .card { background: #fff; margin: 12px; border-radius: 10px; overflow: hidden; }
         .row { display: flex; justify-content: space-between; align-items: center; padding: 16px 15px; border-bottom: 1px solid #f5f5f5; }
         .row:last-child { border-bottom: none; }
@@ -35,12 +34,11 @@
         .val { font-size: 15px; color: #333; text-align: right; flex: 1; display: flex; justify-content: flex-end; align-items: center; overflow: hidden; }
         .val-input { border: none; outline: none; text-align: right; font-size: 15px; color: #333; width: 100%; background: transparent; text-overflow: ellipsis; }
         .icon-green { color: #00a870; font-size: 16px; margin-left: 6px; flex-shrink: 0; }
-        
+        
         .paste-box { background: #f7f9fa; margin: 12px; border-radius: 6px; padding: 12px; position: relative; }
         .paste-box textarea { width: 100%; border: none; background: transparent; outline: none; resize: none; font-size: 14px; color: #333; height: 50px; }
         .btn-paste { background: #00a870; color: #fff; border: none; padding: 6px 12px; border-radius: 4px; font-size: 13px; position: absolute; bottom: 12px; right: 12px; cursor: pointer; }
-        
-        /* 明细行 */
+        
         .item-row { display: flex; align-items: center; padding: 14px 15px; border-bottom: 1px solid #f5f5f5; gap: 8px; }
         .item-name { flex: 1; min-width: 0; border: none; outline: none; font-size: 15px; color: #333; background: transparent; }
         .item-name::placeholder { color: #ccc; }
@@ -48,23 +46,22 @@
         .num-input { border: none; outline: none; text-align: center; width: 42px; font-size: 15px; color: #333; background: transparent; }
         .item-subtotal { width: 70px; text-align: right; font-weight: bold; font-size: 15px; color: #333; flex-shrink: 0; }
         .btn-del { width: 18px; height: 18px; border-radius: 50%; border: 1.5px solid #ccc; color: #ccc; display: flex; justify-content: center; align-items: center; font-size: 14px; cursor: pointer; flex-shrink: 0; margin-left: 4px; font-weight: bold; }
-        
+        
         .btn-add-row { text-align: center; padding: 16px; color: #00a870; font-size: 15px; font-weight: 500; background: #fff; cursor: pointer; }
         .btn-same { border: 1px solid #00a870; color: #00a870; background: transparent; padding: 4px 8px; border-radius: 4px; font-size: 13px; margin-left: 8px; cursor: pointer; white-space: nowrap; }
         .upload-box { width: 72px; height: 72px; background: #f7f9fa; border-radius: 6px; display: flex; justify-content: center; align-items: center; color: #ccc; font-size: 28px; font-weight: 300; margin: 15px; cursor: pointer; }
-        
+        
         .switch { position: relative; display: inline-block; width: 48px; height: 26px; }
         .switch input { opacity: 0; width: 0; height: 0; }
         .slider { position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background-color: #ddd; transition: .4s; border-radius: 26px; }
         .slider:before { position: absolute; content: ""; height: 22px; width: 22px; left: 2px; bottom: 2px; background-color: white; transition: .4s; border-radius: 50%; box-shadow: 0 1px 3px rgba(0,0,0,0.2); }
         input:checked + .slider { background-color: #00a870; }
         input:checked + .slider:before { transform: translateX(22px); }
-        
+        
         .stamp-group { display: flex; gap: 12px; padding: 15px; }
         .stamp-btn { flex: 1; text-align: center; padding: 12px 0; border-radius: 4px; font-size: 15px; background: #f7f9fa; color: #666; cursor: pointer; }
         .stamp-btn.active { background: #00a870; color: #fff; }
-        
-        /* 底部固定按钮（使用 fixed 固定在屏幕底部） */
+        
         .bottom-bar { position: fixed; bottom: 0; left: 0; width: 100%; background: #fff; padding: 12px 16px; z-index: 100; border-top: 1px solid #eee; display: flex; justify-content: center; }
         .bottom-bar-inner { width: 100%; max-width: 480px; }
         .btn-block { background: #00a870; color: #fff; border: none; width: 100%; padding: 14px; border-radius: 8px; font-size: 16px; font-weight: bold; cursor: pointer; }
@@ -97,7 +94,7 @@
         .history-item:last-child { margin-bottom: 0; }
         .history-item .dot { position: absolute; left: -10px; top: 4px; width: 8px; height: 8px; border-radius: 50%; background: #00a870; }
         .history-item .time { color: #ccc; }
-        
+        
         .detail-bottom-bar { position: fixed; bottom: 0; left: 0; width: 100%; background: #fff; display: flex; padding: 10px 15px; border-top: 1px solid #eee; z-index: 100; align-items: center; justify-content: center; }
         .detail-bottom-bar-inner { width: 100%; max-width: 480px; display: flex; align-items: center; }
         .btn-home { display: flex; flex-direction: column; align-items: center; font-size: 12px; color: #666; width: 60px; cursor: pointer; }
@@ -110,20 +107,54 @@
         .pv-success-icon { display: inline-flex; justify-content: center; align-items: center; width: 48px; height: 48px; background: #fff; color: #00a870; border-radius: 50%; font-size: 26px; font-weight: bold; margin-bottom: 12px; }
         .pv-top-area h2 { font-size: 22px; color: #fff; letter-spacing: 1px; }
 
+        /* 预览卡片外框 */
         .receipt-wrapper {
             margin: -30px 12px 20px 12px; background: #fff; border-radius: 8px;
             box-shadow: 0 4px 15px rgba(0,0,0,0.08); overflow: hidden;
             z-index: 2; position: relative; cursor: pointer; height: 380px;
         }
-        .box { width: 800px; background: #ffffff; padding: 40px 30px; transform: scale(0.5); transform-origin: top left; }
-        .top-bar { display: flex; justify-content: space-between; align-items: flex-end; position: relative; margin-bottom: 20px; }
-        .title { font-size: 34px; font-weight: bold; color: #000; letter-spacing: 2px; width: 100%; text-align: center; }
-        .billid { position: absolute; right: 0; bottom: 5px; font-size: 18px; color: #7b5d40; font-weight: bold; }
+
+        /* ======= 核心截图区：防爆盾样式 ======= */
+        .box { 
+            width: 800px; 
+            background: #ffffff; 
+            padding: 40px 30px; 
+            transform: scale(0.5); 
+            transform-origin: top left; 
+            /* 强制排版不乱 */
+            display: block;
+            overflow: hidden;
+        }
+
+        /* 头部 */
+        .top-bar { 
+            display: flex; 
+            justify-content: space-between; 
+            align-items: flex-end; 
+            position: relative; 
+            margin-bottom: 20px; 
+            width: 100%;
+        }
+        .title { font-size: 34px; font-weight: bold; color: #000; letter-spacing: 2px; flex: 1; text-align: center; }
+        .billid { font-size: 18px; color: #7b5d40; font-weight: bold; white-space: nowrap; }
+        
         .line { width: 100%; border-bottom: 4px double #000; margin-bottom: 25px; }
-        .info-row { display: flex; justify-content: space-between; font-size: 18px; color: #333333; margin-bottom: 15px; font-weight: bold; }
+        
+        /* 客户信息行：强制一行 */
+        .info-row { 
+            display: flex; 
+            justify-content: space-between; 
+            width: 100%;
+            font-size: 18px; 
+            color: #333333; 
+            margin-bottom: 15px; 
+            font-weight: bold; 
+            white-space: nowrap; 
+        }
         .info-row span.lbl { color: #7b5d40; }
         .info-row span.val { color: #000; }
 
+        /* 表格 */
         table { width: 100%; border-collapse: collapse; background: #ffffff; table-layout: fixed; border: 2px solid #7b5d40; }
         table th, table td { border: 1px solid #7b5d40; padding: 14px 4px; text-align: center; font-size: 18px; color: #000; font-weight: bold; white-space: nowrap; overflow: hidden; }
         table th { color: #7b5d40; font-weight: bold; }
@@ -135,25 +166,42 @@
         table th:nth-child(6), table td:nth-child(6) { width: 18%; }
         table th:nth-child(7), table td:nth-child(7) { width: 21%; }
 
+        /* 合计行 */
         .total-row td { padding: 15px 10px; font-size: 18px; }
         .total-left { text-align: left; color: #7b5d40; }
         .total-right { text-align: right; color: #7b5d40; }
-        .bottom { margin-top: 25px; font-size: 18px; line-height: 2; color: #7b5d40; font-weight: bold; display: flex; flex-direction: column; gap: 5px; }
+        
+        /* 底部信息：强制改为两行固定布局 */
+        .bottom { 
+            display: flex; 
+            flex-direction: column; 
+            width: 100%;
+            margin-top: 25px; 
+            font-size: 18px; 
+            line-height: 2; 
+            color: #7b5d40; 
+            font-weight: bold; 
+            white-space: nowrap; 
+        }
+        .f-row { display: flex; justify-content: space-between; width: 100%; margin-bottom: 5px; }
         .bottom .val { color: #000; }
 
+        /* 底部按钮及弹窗 */
         .pv-click-hint { text-align: center; color: #00a870; font-size: 15px; font-weight: bold; margin: 20px 0; cursor: pointer; }
         .pv-bottom-bar { position: fixed; bottom: 0; left: 0; width: 100%; background: #fff; display: flex; padding: 10px 15px; border-top: 1px solid #eee; z-index: 100; align-items: center; gap: 10px; justify-content: center; }
         .pv-bottom-bar-inner { width: 100%; max-width: 480px; display: flex; align-items: center; gap: 10px; }
-        
+        
         .pv-btn-icon { display: flex; flex-direction: column; align-items: center; font-size: 11px; color: #666; cursor: pointer; width: 45px; flex-shrink: 0; }
         .pv-btn-icon span { font-size: 20px; margin-bottom: 2px; }
         .pv-btn-outline { flex: 1; display: flex; align-items: center; justify-content: center; border: 1px solid #00a870; color: #00a870; border-radius: 6px; font-size: 14px; font-weight: bold; padding: 12px 0; cursor: pointer; white-space: nowrap; }
         .pv-btn-solid { flex: 1.2; display: flex; align-items: center; justify-content: center; background: #00a870; color: #fff; border-radius: 6px; font-size: 14px; font-weight: bold; padding: 12px 0; cursor: pointer; border: none; white-space: nowrap; }
 
         #image-modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: #0b0b0b; z-index: 99999; flex-direction: column; justify-content: center; align-items: center; }
-        #image-modal img { max-width: 95%; max-height: 80%; border-radius: 4px; background: #fff; }
+        #image-modal img { max-width: 95%; max-height: 70%; border-radius: 4px; background: #fff; object-fit: contain; }
         #image-modal p { color: #fff; margin-top: 20px; font-size: 16px; font-weight: bold; }
-        .btn-close-modal { margin-top: 20px; background: #333; color: #fff; border: 1px solid #555; padding: 10px 30px; border-radius: 20px; font-size: 15px; cursor: pointer; }
+        .modal-btns { margin-top: 20px; display: flex; gap: 15px; }
+        .btn-close-modal { background: #333; color: #fff; border: 1px solid #555; padding: 10px 30px; border-radius: 20px; font-size: 15px; cursor: pointer; }
+        .btn-save-direct { background: #00a870; color: #fff; border: none; padding: 10px 30px; border-radius: 20px; font-size: 15px; font-weight: bold; cursor: pointer; text-decoration: none; display: inline-block; }
     </style>
 </head>
 <body>
@@ -336,6 +384,7 @@
 
         <div class="receipt-wrapper" id="receipt-card" onclick="showImageModal()">
             <div class="box" id="capture-box">
+                
                 <div class="top-bar">
                     <div class="title" id="pv-company">西安七彩阳光涂料有限公司</div>
                     <div class="billid" id="pv-no">DZ2026082610164057</div>
@@ -362,16 +411,17 @@
                     <tbody id="pv-tbody"></tbody>
                 </table>
 
+                <!-- 底部信息：强制拆分为两排 -->
                 <div class="bottom">
-                    <div>
-                        <span class="lbl">收款人：</span><span class="val" id="pv-payee"></span>　
-                        <span class="lbl">应收金额：</span><span class="val" id="pv-rcv-total"></span>　
-                        <span class="lbl">实收金额：</span><span class="val" id="pv-rcv"></span>　
-                        <span class="lbl">欠款金额：</span><span class="val" id="pv-debt"></span>
+                    <div class="f-row">
+                        <span><span class="lbl">收款人：</span><span class="val" id="pv-payee"></span></span>
+                        <span><span class="lbl">应收金额：</span><span class="val" id="pv-rcv-total"></span></span>
+                        <span><span class="lbl">实收金额：</span><span class="val" id="pv-rcv"></span></span>
+                        <span><span class="lbl">欠款金额：</span><span class="val" id="pv-debt"></span></span>
                     </div>
-                    <div>
-                        <span class="lbl">电话：</span><span class="val" id="pv-footer-phone"></span>　
-                        <span class="lbl">地址：</span><span class="val" id="pv-footer-address"></span>
+                    <div class="f-row" style="margin-top: 10px;">
+                        <span><span class="lbl">电话：</span><span class="val" id="pv-footer-phone"></span></span>
+                        <span><span class="lbl">地址：</span><span class="val" id="pv-footer-address"></span></span>
                     </div>
                 </div>
             </div>
@@ -382,22 +432,24 @@
         <div class="pv-bottom-bar">
             <div class="pv-bottom-bar-inner">
                 <div class="pv-btn-icon" onclick="switchView('view1')"><span>⌂</span>回首页</div>
-                <div class="pv-btn-icon" onclick="downloadImage()"><span>📥</span>保存</div>
+                <div class="pv-btn-icon" onclick="showImageModal()"><span>📥</span>保存</div>
                 <div class="pv-btn-outline" onclick="alert('请使用微信扫一扫')">扫码领取</div>
-                <button class="pv-btn-solid" onclick="downloadImage()"><span style="font-size:16px; margin-right:4px;">💬</span> 转发微信</button>
+                <button class="pv-btn-solid" onclick="showImageModal()"><span style="font-size:16px; margin-right:4px;">💬</span> 转发微信</button>
             </div>
         </div>
     </div>
 
     <!-- 图片弹窗 -->
-    <div id="image-modal" onclick="this.style.display='none'">
+    <div id="image-modal">
         <img id="result-img" src="">
-        <p>长按图片保存到手机相册</p>
-        <button class="btn-close-modal" onclick="this.parentElement.style.display='none'">关闭</button>
+        <p id="modal-tip">正在生成图片...</p>
+        <div class="modal-btns">
+            <button class="btn-close-modal" onclick="document.getElementById('image-modal').style.display='none'">关闭</button>
+            <a id="btn-save-direct" class="btn-save-direct" style="display: none;">直接下载图片</a>
+        </div>
     </div>
 
 <script>
-    // 初始化数据
     document.addEventListener('DOMContentLoaded', () => {
         const now = new Date();
         document.getElementById('in-date').value = now.toISOString().split('T')[0];
@@ -531,7 +583,7 @@
         document.getElementById('pv-footer-phone').innerText = globalData.phone;
         document.getElementById('pv-footer-address').innerText = globalData.address;
         document.getElementById('pv-payee').innerText = globalData.payee;
-        
+        
         document.getElementById('pv-rcv-total').innerText = '¥' + globalData.total.toFixed(2);
         document.getElementById('pv-rcv').innerText = '¥' + globalData.received.toFixed(2);
         document.getElementById('pv-debt').innerText = '¥' + globalData.debt.toFixed(2);
@@ -568,7 +620,7 @@
             }
             html += `</tr>`;
         }
-        
+        
         html += `
             <tr class="total-row">
                 <td colspan="4" class="total-left">合计 大写金额：${toChineseMoney(globalData.total.toFixed(2))}</td>
@@ -582,51 +634,54 @@
     function showImageModal() {
         if(window.isRendering) return;
         window.isRendering = true;
-        const modalTip = document.querySelector('#image-modal p');
-        const originalText = modalTip.innerText;
+        
+        const modal = document.getElementById('image-modal');
+        const modalImg = document.getElementById('result-img');
+        const modalTip = document.getElementById('modal-tip');
+        const downloadBtn = document.getElementById('btn-save-direct');
+        
+        modalImg.src = ''; 
         modalTip.innerText = "正在生成高清图片...";
-        document.getElementById('image-modal').style.display = 'flex';
+        downloadBtn.style.display = 'none';
+        modal.style.display = 'flex';
 
         const originalBox = document.getElementById('capture-box');
         const clone = originalBox.cloneNode(true);
-        
+        
+        // 核心：彻底去除缩放，在后台以 800px 真实尺寸生成
         clone.style.position = 'absolute';
         clone.style.top = '0';
         clone.style.left = '0';
         clone.style.zIndex = '-9999';
-        clone.style.transform = 'none'; 
+        clone.style.transform = 'none'; 
         clone.style.margin = '0';
+        clone.style.width = '800px'; // 强制宽度
+        clone.style.backgroundColor = '#ffffff';
         document.body.appendChild(clone);
 
         html2canvas(clone, {
-            scale: 2, 
+            scale: 2, 
             useCORS: true,
-            backgroundColor: '#ffffff'
+            backgroundColor: '#ffffff',
+            width: 800 // 强制截图宽度
         }).then(canvas => {
-            document.body.removeChild(clone); 
+            document.body.removeChild(clone); 
             const imgData = canvas.toDataURL('image/png');
-            document.getElementById('result-img').src = imgData;
-            modalTip.innerText = originalText;
-            window.isRendering = false;
+            
+            modalImg.src = imgData;
+            modalTip.innerText = "长按图片保存到手机相册";
+            
+            downloadBtn.href = imgData;
+            downloadBtn.download = `账单_${globalData.customer || '收据'}.png`;
+            downloadBtn.style.display = 'inline-block';
 
-            const isWechat = navigator.userAgent.toLowerCase().indexOf('micromessenger') !== -1;
-            if(!isWechat) {
-                const link = document.createElement('a');
-                link.download = `账单_${globalData.customer}.png`;
-                link.href = imgData;
-                link.click();
-            }
+            window.isRendering = false;
         }).catch(err => {
             document.body.removeChild(clone);
             window.isRendering = false;
-            modalTip.innerText = originalText;
-            document.getElementById('image-modal').style.display = 'none';
+            modal.style.display = 'none';
             alert('生成图片失败，请直接截图。');
         });
-    }
-
-    function downloadImage() {
-        showImageModal();
     }
 </script>
 </body>
