@@ -32,21 +32,33 @@
         .row:last-child { border-bottom: none; }
         .label { font-size: 15px; color: #333; flex-shrink: 0; }
         .label.req::before { content: "*"; color: #ff4d4f; margin-right: 4px; }
-        .val { font-size: 15px; color: #333; text-align: right; flex-grow: 1; }
-        .val-input { border: none; outline: none; text-align: right; font-size: 15px; color: #333; width: 100%; background: transparent; }
-        .icon-green { color: #009b6b; font-size: 16px; margin-left: 6px; }
+        .val { font-size: 15px; color: #333; text-align: right; flex: 1; overflow: hidden; display: flex; justify-content: flex-end; align-items: center;}
+        
+        /* 修复顶部输入框被截断的问题 */
+        .val-input { border: none; outline: none; text-align: right; font-size: 15px; color: #333; width: 100%; background: transparent; text-overflow: ellipsis; padding-left: 10px; }
+        
+        .icon-green { color: #009b6b; font-size: 16px; margin-left: 6px; flex-shrink: 0; }
         .paste-box { background: #f7f9fa; margin: 12px; border-radius: 6px; padding: 12px; position: relative; }
         .paste-box textarea { width: 100%; border: none; background: transparent; outline: none; resize: none; font-size: 14px; color: #333; height: 50px; }
         .btn-paste { background: #009b6b; color: #fff; border: none; padding: 6px 12px; border-radius: 4px; font-size: 13px; position: absolute; bottom: 12px; right: 12px; cursor: pointer; }
         
-        /* 核心修复：明细行输入框加边框，点击全选 */
-        .item-row { display: flex; align-items: center; padding: 10px 15px; border-bottom: 1px solid #f5f5f5; gap: 8px; }
-        .item-row input.item-name { flex: 1; min-width: 0; border: 1px solid #e0e0e0; border-radius: 4px; padding: 8px; outline: none; font-size: 14px; color: #333; background: #fafafa; }
-        .item-calc { display: flex; align-items: center; color: #333; font-size: 15px; flex-shrink: 0; gap: 4px; }
-        .num-input { border: 1px solid #e0e0e0; border-radius: 4px; padding: 8px 2px; text-align: center; width: 45px; font-size: 14px; color: #333; background: #fafafa; outline: none; }
-        .item-subtotal { width: 65px; text-align: right; font-weight: 500; font-size: 15px; color: #333; flex-shrink: 0; }
-        .btn-del { width: 18px; height: 18px; border-radius: 50%; border: 1.5px solid #ccc; color: #ccc; display: flex; justify-content: center; align-items: center; font-size: 14px; cursor: pointer; flex-shrink: 0; }
-        .btn-add-row { text-align: center; padding: 16px; color: #009b6b; font-size: 15px; font-weight: 500; background: #fff; cursor: pointer; }
+        /* ================= 修复核心：明细行改为独立卡片，上下两行 ================= */
+        .item-row { display: flex; flex-direction: column; padding: 12px 15px; border-bottom: 1px solid #f5f5f5; gap: 10px; }
+        
+        /* 第一行：商品名称 + 删除 */
+        .item-row-top { display: flex; justify-content: space-between; align-items: center; gap: 10px; width: 100%; }
+        .item-name { flex: 1; border: 1px solid #e0e0e0; border-radius: 6px; padding: 10px; outline: none; font-size: 15px; color: #333; background: #fafafa; }
+        .item-name:focus { border-color: #009b6b; background: #fff; }
+        .btn-del { width: 24px; height: 24px; border-radius: 50%; border: 1.5px solid #ccc; color: #999; display: flex; justify-content: center; align-items: center; font-size: 16px; cursor: pointer; flex-shrink: 0; }
+        
+        /* 第二行：单价 * 数量 + 小计 */
+        .item-row-bottom { display: flex; justify-content: space-between; align-items: center; width: 100%; }
+        .item-calc { display: flex; align-items: center; color: #666; font-size: 14px; gap: 8px; }
+        .num-input { border: 1px solid #e0e0e0; border-radius: 6px; padding: 8px 4px; text-align: center; width: 60px; font-size: 14px; color: #333; background: #fafafa; outline: none; }
+        .num-input:focus { border-color: #009b6b; background: #fff; }
+        .item-subtotal { font-weight: bold; font-size: 16px; color: #333; text-align: right; }
+        
+        .btn-add-row { text-align: center; padding: 16px; color: #009b6b; font-size: 15px; font-weight: 500; background: #fff; cursor: pointer; border-top: 1px dashed #eee; }
         
         .btn-same { border: 1px solid #009b6b; color: #009b6b; background: transparent; padding: 4px 8px; border-radius: 4px; font-size: 13px; margin-left: 8px; cursor: pointer; white-space: nowrap; }
         .upload-box { width: 72px; height: 72px; background: #f7f9fa; border-radius: 6px; display: flex; justify-content: center; align-items: center; color: #ccc; font-size: 28px; font-weight: 300; margin: 15px; cursor: pointer; }
@@ -101,7 +113,7 @@
         .pv-success-icon { display: inline-flex; justify-content: center; align-items: center; width: 48px; height: 48px; background: #fff; color: #009b6b; border-radius: 50%; font-size: 26px; font-weight: bold; margin-bottom: 12px; }
         .pv-top-area h2 { font-size: 22px; color: #fff; letter-spacing: 1px; }
 
-        /* 预览卡片外框：利用 overflow:hidden 和缩放控制整体大小 */
+        /* 预览卡片外框 */
         .receipt-wrapper {
             margin: -30px 12px 20px 12px;
             background: #fff;
@@ -114,87 +126,27 @@
             height: 380px; /* 固定的预览高度 */
         }
 
-        /* ======= 核心截图区：绝对宽度 800px，完美还原图2比例 ======= */
+        /* 核心截图区：绝对宽度 800px，完美还原原版比例 */
         .box {
             width: 800px;
             background: #ffffff;
             padding: 40px 30px;
-            /* 默认缩小以适应手机屏幕 */
-            transform: scale(0.5);
+            transform: scale(0.5); /* 默认缩小以适应手机屏幕 */
             transform-origin: top left;
         }
 
-        .top-bar {
-            display: flex;
-            justify-content: space-between;
-            align-items: flex-end;
-            position: relative;
-            margin-bottom: 20px;
-        }
-
-        .title {
-            font-size: 34px;
-            font-weight: bold;
-            color: #000;
-            letter-spacing: 2px;
-            width: 100%;
-            text-align: center;
-        }
-
-        .billid {
-            position: absolute;
-            right: 0;
-            bottom: 5px;
-            font-size: 18px;
-            color: #7b5d40;
-            font-weight: bold;
-        }
-
-        /* 粗+细 双横线 */
-        .line {
-            width: 100%;
-            border-bottom: 4px double #000;
-            margin-bottom: 25px;
-        }
-
-        .info-row {
-            display: flex;
-            justify-content: space-between;
-            font-size: 18px;
-            color: #333333;
-            margin-bottom: 15px;
-            font-weight: bold;
-        }
-        
+        .top-bar { display: flex; justify-content: space-between; align-items: flex-end; position: relative; margin-bottom: 20px; }
+        .title { font-size: 34px; font-weight: bold; color: #000; letter-spacing: 2px; width: 100%; text-align: center; }
+        .billid { position: absolute; right: 0; bottom: 5px; font-size: 18px; color: #7b5d40; font-weight: bold; }
+        .line { width: 100%; border-bottom: 4px double #000; margin-bottom: 25px; }
+        .info-row { display: flex; justify-content: space-between; font-size: 18px; color: #333333; margin-bottom: 15px; font-weight: bold; }
         .info-row span.lbl { color: #7b5d40; }
         .info-row span.val { color: #000; }
 
-        table {
-            width: 100%;
-            border-collapse: collapse;
-            background: #ffffff;
-            table-layout: fixed;
-            border: 2px solid #7b5d40; /* 外边框 */
-        }
+        table { width: 100%; border-collapse: collapse; background: #ffffff; table-layout: fixed; border: 2px solid #7b5d40; }
+        table th, table td { border: 1px solid #7b5d40; padding: 14px 4px; text-align: center; font-size: 18px; color: #000; font-weight: bold; white-space: nowrap; overflow: hidden; }
+        table th { color: #7b5d40; font-weight: bold; }
 
-        table th,
-        table td {
-            border: 1px solid #7b5d40;
-            padding: 14px 4px;
-            text-align: center;
-            font-size: 18px;
-            color: #000;
-            font-weight: bold;
-            white-space: nowrap;
-            overflow: hidden;
-        }
-
-        table th {
-            color: #7b5d40;
-            font-weight: bold;
-        }
-
-        /* 列宽精细调整 */
         table th:nth-child(1), table td:nth-child(1) { width: 8%; }
         table th:nth-child(2), table td:nth-child(2) { width: 23%; }
         table th:nth-child(3), table td:nth-child(3) { width: 9%; }
@@ -203,28 +155,14 @@
         table th:nth-child(6), table td:nth-child(6) { width: 18%; }
         table th:nth-child(7), table td:nth-child(7) { width: 21%; }
 
-        /* 合计行：跨列无竖线 */
-        .total-row td {
-            padding: 15px 10px;
-            font-size: 18px;
-        }
+        .total-row td { padding: 15px 10px; font-size: 18px; }
         .total-left { text-align: left; color: #7b5d40; }
         .total-right { text-align: right; color: #7b5d40; }
 
-        .bottom {
-            margin-top: 25px;
-            font-size: 18px;
-            line-height: 2;
-            color: #7b5d40;
-            font-weight: bold;
-            display: flex;
-            flex-direction: column;
-            gap: 5px;
-        }
-        
+        .bottom { margin-top: 25px; font-size: 18px; line-height: 2; color: #7b5d40; font-weight: bold; display: flex; flex-direction: column; gap: 5px; }
         .bottom .val { color: #000; }
 
-        /* 底部操作按钮 */
+        /* 底部按钮 */
         .pv-click-hint { text-align: center; color: #009b6b; font-size: 15px; font-weight: bold; margin: 20px 0; cursor: pointer; }
         .pv-bottom-bar { position: absolute; bottom: 0; left: 0; width: 100%; background: #fff; display: flex; padding: 10px 15px; border-top: 1px solid #eee; z-index: 100; align-items: center; gap: 10px; }
         .pv-btn-icon { display: flex; flex-direction: column; align-items: center; font-size: 11px; color: #666; cursor: pointer; width: 45px; flex-shrink: 0; }
@@ -253,8 +191,8 @@
         <div class="card">
             <div class="row">
                 <div class="label">收据抬头</div>
-                <div class="val" style="display:flex; justify-content:flex-end; align-items:center;">
-                    <input type="text" id="in-company" class="val-input" value="西安七彩阳光涂料有限公司" style="width:auto;">
+                <div class="val">
+                    <input type="text" id="in-company" class="val-input" value="西安七彩阳光涂料有限公司">
                     <span class="icon-green" style="font-size:10px; margin-left:5px;">▼</span>
                 </div>
             </div>
@@ -267,8 +205,8 @@
         <div class="card">
             <div class="row">
                 <div class="label req">客户名称</div>
-                <div class="val" style="display:flex; justify-content:flex-end; align-items:center;">
-                    <input type="text" id="in-customer" class="val-input" value="老庙瓦厂" style="width:auto;">
+                <div class="val">
+                    <input type="text" id="in-customer" class="val-input" value="老庙瓦厂">
                     <span class="icon-green">📇</span>
                 </div>
             </div>
@@ -291,8 +229,8 @@
             </div>
             <div class="row">
                 <div class="label">实收金额</div>
-                <div class="val" style="display:flex; justify-content:flex-end; align-items:center;">
-                    <input type="number" id="in-received" class="val-input" value="0" oninput="calcTotal()" style="font-weight:bold; width:100px;">
+                <div class="val">
+                    <input type="number" id="in-received" class="val-input" value="0" oninput="calcTotal()" style="font-weight:bold;">
                     <button class="btn-same" onclick="setSame()">同上</button>
                 </div>
             </div>
@@ -305,34 +243,20 @@
         <div class="card">
             <div class="row">
                 <div class="label">服务时间</div>
-                <div class="val" style="display:flex; justify-content:flex-end; align-items:center; gap:8px;">
-                    <input type="date" id="in-date" class="val-input" style="width:100px; font-weight:bold;">
+                <div class="val" style="gap:8px;">
+                    <input type="date" id="in-date" class="val-input" style="width:auto;">
                     <span class="icon-green" style="color:#009b6b;">📅</span>
-                    <input type="time" id="in-time" class="val-input" style="width:70px; font-weight:bold;">
+                    <input type="time" id="in-time" class="val-input" style="width:auto;">
                     <span class="icon-green" style="color:#009b6b;">🕒</span>
                 </div>
             </div>
             <div class="row">
                 <div class="label">客户地址</div>
-                <div class="val" style="display:flex; justify-content:flex-end; align-items:center;">
+                <div class="val">
                     <input type="text" id="in-address" class="val-input" placeholder="选择地址" value="西安市阎良区">
                     <span class="icon-green">📍</span>
                 </div>
             </div>
-            <div class="row" style="border-bottom:none; padding-bottom:0;">
-                <div class="label">备注信息</div>
-                <button class="btn-paste" style="position:static; padding:4px 8px;">选模板</button>
-            </div>
-            <div class="paste-box" style="margin-top:10px; margin-bottom:15px;">
-                <textarea placeholder="举例：客户购买了一套护肤品，退换货政策：7天内可退换。" style="height:70px;"></textarea>
-            </div>
-        </div>
-
-        <div class="card">
-            <div class="row" style="border-bottom:none; padding-bottom:5px;">
-                <div class="label">记录凭证 <span style="font-size:12px; color:#999; font-weight:normal;">上传服务凭证、物流单等</span></div>
-            </div>
-            <div class="upload-box">+</div>
             <div class="row">
                 <div class="label">收款人</div>
                 <input type="text" id="in-payee" class="val-input" value="耿健">
@@ -421,7 +345,6 @@
             <h2 id="pv-status">账单已结清</h2>
         </div>
 
-        <!-- 截图核心区 -->
         <div class="receipt-wrapper" id="receipt-card" onclick="showImageModal()">
             <div class="box" id="capture-box">
                 <div class="top-bar">
@@ -477,7 +400,6 @@
     </div>
 </div>
 
-<!-- 图片弹窗 -->
 <div id="image-modal" onclick="this.style.display='none'">
     <img id="result-img" src="">
     <p>长按图片保存到手机相册</p>
@@ -489,26 +411,31 @@
     document.getElementById('in-date').value = now.toISOString().split('T')[0];
     document.getElementById('in-time').value = now.toTimeString().slice(0,5);
 
-    // 初始化默认数据
     addItem('红色', 240, 40);
     addItem('灰色', 280, 20);
     addItem('脱膜油', 950, 1);
     addItem('油泵连接套', 40, 2);
 
-    // 渲染明细行（已加上点击选中和边框）
+    // 渲染明细行（独立卡片式上下两行）
     function addItem(name = '', price = '', qty = '') {
         const container = document.getElementById('items-container');
         const row = document.createElement('div');
         row.className = 'item-row';
         row.innerHTML = `
-            <input type="text" class="item-name" value="${name}" placeholder="商品名称" onclick="this.select()">
-            <div class="item-calc">
-                <input type="number" class="num-input item-price" value="${price}" onclick="this.select()" oninput="calcTotal()">
-                <span>*</span>
-                <input type="number" class="num-input item-qty" value="${qty}" onclick="this.select()" oninput="calcTotal()">
+            <div class="item-row-top">
+                <input type="text" class="item-name" value="${name}" placeholder="请输入商品名称" onclick="this.select()">
+                <div class="btn-del" onclick="this.closest('.item-row').remove(); calcTotal()">-</div>
             </div>
-            <div class="item-subtotal">0.00</div>
-            <div class="btn-del" onclick="this.parentElement.remove(); calcTotal()">-</div>
+            <div class="item-row-bottom">
+                <div class="item-calc">
+                    <span>单价</span>
+                    <input type="number" class="num-input item-price" value="${price}" onclick="this.select()" oninput="calcTotal()">
+                    <span>*</span>
+                    <span>数量</span>
+                    <input type="number" class="num-input item-qty" value="${qty}" onclick="this.select()" oninput="calcTotal()">
+                </div>
+                <div class="item-subtotal">0.00</div>
+            </div>
         `;
         container.appendChild(row);
         calcTotal();
