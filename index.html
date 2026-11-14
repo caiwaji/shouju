@@ -39,6 +39,7 @@
         .paste-box textarea { width: 100%; border: none; background: transparent; outline: none; resize: none; font-size: 14px; color: #333; height: 50px; }
         .btn-paste { background: #00a870; color: #fff; border: none; padding: 6px 12px; border-radius: 4px; font-size: 13px; position: absolute; bottom: 12px; right: 12px; cursor: pointer; }
         
+        /* 明细行原生化 */
         .item-row { display: flex; align-items: center; padding: 14px 15px; border-bottom: 1px solid #f5f5f5; gap: 8px; }
         .item-name { flex: 1; min-width: 0; border: none; outline: none; font-size: 15px; color: #333; background: transparent; }
         .item-name::placeholder { color: #ccc; }
@@ -107,54 +108,32 @@
         .pv-success-icon { display: inline-flex; justify-content: center; align-items: center; width: 48px; height: 48px; background: #fff; color: #00a870; border-radius: 50%; font-size: 26px; font-weight: bold; margin-bottom: 12px; }
         .pv-top-area h2 { font-size: 22px; color: #fff; letter-spacing: 1px; }
 
-        /* 预览卡片外框 */
+        /* 核心：允许横向滚动的超宽容器 */
         .receipt-wrapper {
             margin: -30px 12px 20px 12px; background: #fff; border-radius: 8px;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.08); overflow: hidden;
-            z-index: 2; position: relative; cursor: pointer; height: 380px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.08);
+            z-index: 2; position: relative; cursor: pointer; 
+            overflow-x: auto; /* 允许横向滑动查看 */
+            -webkit-overflow-scrolling: touch;
         }
 
-        /* ======= 核心截图区：防爆盾样式 ======= */
+        /* 严格 800px 宽的收据画布，保证截图绝对不变形 */
         .box { 
             width: 800px; 
             background: #ffffff; 
             padding: 40px 30px; 
-            transform: scale(0.5); 
-            transform-origin: top left; 
-            /* 强制排版不乱 */
-            display: block;
-            overflow: hidden;
+            box-sizing: border-box;
         }
 
-        /* 头部 */
-        .top-bar { 
-            display: flex; 
-            justify-content: space-between; 
-            align-items: flex-end; 
-            position: relative; 
-            margin-bottom: 20px; 
-            width: 100%;
-        }
+        .top-bar { display: flex; justify-content: space-between; align-items: flex-end; position: relative; margin-bottom: 20px; width: 100%; }
         .title { font-size: 34px; font-weight: bold; color: #000; letter-spacing: 2px; flex: 1; text-align: center; }
         .billid { font-size: 18px; color: #7b5d40; font-weight: bold; white-space: nowrap; }
-        
         .line { width: 100%; border-bottom: 4px double #000; margin-bottom: 25px; }
         
-        /* 客户信息行：强制一行 */
-        .info-row { 
-            display: flex; 
-            justify-content: space-between; 
-            width: 100%;
-            font-size: 18px; 
-            color: #333333; 
-            margin-bottom: 15px; 
-            font-weight: bold; 
-            white-space: nowrap; 
-        }
+        .info-row { display: flex; justify-content: space-between; width: 100%; font-size: 18px; color: #333; margin-bottom: 15px; font-weight: bold; white-space: nowrap; }
         .info-row span.lbl { color: #7b5d40; }
         .info-row span.val { color: #000; }
 
-        /* 表格 */
         table { width: 100%; border-collapse: collapse; background: #ffffff; table-layout: fixed; border: 2px solid #7b5d40; }
         table th, table td { border: 1px solid #7b5d40; padding: 14px 4px; text-align: center; font-size: 18px; color: #000; font-weight: bold; white-space: nowrap; overflow: hidden; }
         table th { color: #7b5d40; font-weight: bold; }
@@ -166,27 +145,14 @@
         table th:nth-child(6), table td:nth-child(6) { width: 18%; }
         table th:nth-child(7), table td:nth-child(7) { width: 21%; }
 
-        /* 合计行 */
         .total-row td { padding: 15px 10px; font-size: 18px; }
         .total-left { text-align: left; color: #7b5d40; }
         .total-right { text-align: right; color: #7b5d40; }
         
-        /* 底部信息：强制改为两行固定布局 */
-        .bottom { 
-            display: flex; 
-            flex-direction: column; 
-            width: 100%;
-            margin-top: 25px; 
-            font-size: 18px; 
-            line-height: 2; 
-            color: #7b5d40; 
-            font-weight: bold; 
-            white-space: nowrap; 
-        }
+        .bottom { display: flex; flex-direction: column; width: 100%; margin-top: 25px; font-size: 18px; line-height: 2; color: #7b5d40; font-weight: bold; white-space: nowrap; }
         .f-row { display: flex; justify-content: space-between; width: 100%; margin-bottom: 5px; }
         .bottom .val { color: #000; }
 
-        /* 底部按钮及弹窗 */
         .pv-click-hint { text-align: center; color: #00a870; font-size: 15px; font-weight: bold; margin: 20px 0; cursor: pointer; }
         .pv-bottom-bar { position: fixed; bottom: 0; left: 0; width: 100%; background: #fff; display: flex; padding: 10px 15px; border-top: 1px solid #eee; z-index: 100; align-items: center; gap: 10px; justify-content: center; }
         .pv-bottom-bar-inner { width: 100%; max-width: 480px; display: flex; align-items: center; gap: 10px; }
@@ -382,6 +348,7 @@
             <h2 id="pv-status">账单已结清</h2>
         </div>
 
+        <!-- 横向可滑动的容器，内部是固定 800px 的票据，保证不白屏、不变形 -->
         <div class="receipt-wrapper" id="receipt-card" onclick="showImageModal()">
             <div class="box" id="capture-box">
                 
@@ -411,7 +378,6 @@
                     <tbody id="pv-tbody"></tbody>
                 </table>
 
-                <!-- 底部信息：强制拆分为两排 -->
                 <div class="bottom">
                     <div class="f-row">
                         <span><span class="lbl">收款人：</span><span class="val" id="pv-payee"></span></span>
@@ -427,7 +393,7 @@
             </div>
         </div>
 
-        <div class="pv-click-hint" onclick="showImageModal()">👁 点击查看大图</div>
+        <div class="pv-click-hint" onclick="showImageModal()">👁 点击查看大图/保存</div>
 
         <div class="pv-bottom-bar">
             <div class="pv-bottom-bar-inner">
@@ -645,29 +611,17 @@
         downloadBtn.style.display = 'none';
         modal.style.display = 'flex';
 
-        const originalBox = document.getElementById('capture-box');
-        const clone = originalBox.cloneNode(true);
-        
-        // 核心：彻底去除缩放，在后台以 800px 真实尺寸生成
-        clone.style.position = 'absolute';
-        clone.style.top = '0';
-        clone.style.left = '0';
-        clone.style.zIndex = '-9999';
-        clone.style.transform = 'none'; 
-        clone.style.margin = '0';
-        clone.style.width = '800px'; // 强制宽度
-        clone.style.backgroundColor = '#ffffff';
-        document.body.appendChild(clone);
+        // 直接截取页面上真实的 800px 节点
+        const targetBox = document.getElementById('capture-box');
 
-        html2canvas(clone, {
+        html2canvas(targetBox, {
             scale: 2, 
             useCORS: true,
             backgroundColor: '#ffffff',
-            width: 800 // 强制截图宽度
+            width: 800,
+            height: targetBox.offsetHeight // 动态计算高度
         }).then(canvas => {
-            document.body.removeChild(clone); 
             const imgData = canvas.toDataURL('image/png');
-            
             modalImg.src = imgData;
             modalTip.innerText = "长按图片保存到手机相册";
             
@@ -677,7 +631,6 @@
 
             window.isRendering = false;
         }).catch(err => {
-            document.body.removeChild(clone);
             window.isRendering = false;
             modal.style.display = 'none';
             alert('生成图片失败，请直接截图。');
