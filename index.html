@@ -23,58 +23,68 @@
         .view { position: absolute; top: 0; left: 0; width: 100%; height: 100%; display: none; flex-direction: column; overflow-y: auto; background-color: #f4f6f8; padding-bottom: 80px; }
         .view.active { display: flex; }
 
-        /* ================= 视图1：录入页 ================= */
+        /* ================= 视图1：录入页 (1:1 精准还原图1/图2) ================= */
         .navbar { background: #fff; padding: 14px 16px; display: flex; justify-content: space-between; align-items: center; position: sticky; top: 0; z-index: 10; }
         .nav-title { font-size: 17px; font-weight: 500; position: absolute; left: 50%; transform: translateX(-50%); }
         .nav-icon { font-size: 18px; color: #333; cursor: pointer; display: flex; align-items: center; gap: 5px; }
+        
         .card { background: #fff; margin: 12px; border-radius: 10px; overflow: hidden; }
         .row { display: flex; justify-content: space-between; align-items: center; padding: 16px 15px; border-bottom: 1px solid #f5f5f5; }
         .row:last-child { border-bottom: none; }
         .label { font-size: 15px; color: #333; flex-shrink: 0; }
         .label.req::before { content: "*"; color: #ff4d4f; margin-right: 4px; }
-        .val { font-size: 15px; color: #333; text-align: right; flex: 1; overflow: hidden; display: flex; justify-content: flex-end; align-items: center;}
+        .val { font-size: 15px; color: #333; text-align: right; flex: 1; display: flex; justify-content: flex-end; align-items: center; overflow: hidden; }
         
-        /* 修复顶部输入框被截断的问题 */
-        .val-input { border: none; outline: none; text-align: right; font-size: 15px; color: #333; width: 100%; background: transparent; text-overflow: ellipsis; padding-left: 10px; }
+        .val-input { border: none; outline: none; text-align: right; font-size: 15px; color: #333; width: 100%; background: transparent; text-overflow: ellipsis; }
         
-        .icon-green { color: #009b6b; font-size: 16px; margin-left: 6px; flex-shrink: 0; }
+        .icon-green { color: #00a870; font-size: 16px; margin-left: 6px; flex-shrink: 0; }
+        
+        /* 粘贴框 */
         .paste-box { background: #f7f9fa; margin: 12px; border-radius: 6px; padding: 12px; position: relative; }
         .paste-box textarea { width: 100%; border: none; background: transparent; outline: none; resize: none; font-size: 14px; color: #333; height: 50px; }
-        .btn-paste { background: #009b6b; color: #fff; border: none; padding: 6px 12px; border-radius: 4px; font-size: 13px; position: absolute; bottom: 12px; right: 12px; cursor: pointer; }
+        .btn-paste { background: #00a870; color: #fff; border: none; padding: 6px 12px; border-radius: 4px; font-size: 13px; position: absolute; bottom: 12px; right: 12px; cursor: pointer; }
         
-        /* ================= 修复核心：明细行改为独立卡片，上下两行 ================= */
-        .item-row { display: flex; flex-direction: column; padding: 12px 15px; border-bottom: 1px solid #f5f5f5; gap: 10px; }
+        /* 核心：明细列表排版 (完美还原图1的极简单行) */
+        .item-row { display: flex; align-items: center; padding: 14px 15px; border-bottom: 1px solid #f5f5f5; gap: 8px; }
         
-        /* 第一行：商品名称 + 删除 */
-        .item-row-top { display: flex; justify-content: space-between; align-items: center; gap: 10px; width: 100%; }
-        .item-name { flex: 1; border: 1px solid #e0e0e0; border-radius: 6px; padding: 10px; outline: none; font-size: 15px; color: #333; background: #fafafa; }
-        .item-name:focus { border-color: #009b6b; background: #fff; }
-        .btn-del { width: 24px; height: 24px; border-radius: 50%; border: 1.5px solid #ccc; color: #999; display: flex; justify-content: center; align-items: center; font-size: 16px; cursor: pointer; flex-shrink: 0; }
+        /* 商品名称输入框，占满剩余空间 */
+        .item-name { flex: 1; min-width: 0; border: none; outline: none; font-size: 15px; color: #333; background: transparent; }
+        .item-name::placeholder { color: #ccc; }
         
-        /* 第二行：单价 * 数量 + 小计 */
-        .item-row-bottom { display: flex; justify-content: space-between; align-items: center; width: 100%; }
-        .item-calc { display: flex; align-items: center; color: #666; font-size: 14px; gap: 8px; }
-        .num-input { border: 1px solid #e0e0e0; border-radius: 6px; padding: 8px 4px; text-align: center; width: 60px; font-size: 14px; color: #333; background: #fafafa; outline: none; }
-        .num-input:focus { border-color: #009b6b; background: #fff; }
-        .item-subtotal { font-weight: bold; font-size: 16px; color: #333; text-align: right; }
+        /* 单价和数量容器 */
+        .item-calc { display: flex; align-items: center; color: #333; font-size: 15px; flex-shrink: 0; gap: 4px; }
+        .num-input { border: none; outline: none; text-align: center; width: 42px; font-size: 15px; color: #333; background: transparent; }
         
-        .btn-add-row { text-align: center; padding: 16px; color: #009b6b; font-size: 15px; font-weight: 500; background: #fff; cursor: pointer; border-top: 1px dashed #eee; }
+        /* 小计金额 */
+        .item-subtotal { width: 70px; text-align: right; font-weight: bold; font-size: 15px; color: #333; flex-shrink: 0; }
         
-        .btn-same { border: 1px solid #009b6b; color: #009b6b; background: transparent; padding: 4px 8px; border-radius: 4px; font-size: 13px; margin-left: 8px; cursor: pointer; white-space: nowrap; }
+        /* 删除按钮圆圈 */
+        .btn-del { width: 18px; height: 18px; border-radius: 50%; border: 1.5px solid #ccc; color: #ccc; display: flex; justify-content: center; align-items: center; font-size: 14px; cursor: pointer; flex-shrink: 0; margin-left: 4px; font-weight: bold; }
+        
+        .btn-add-row { text-align: center; padding: 16px; color: #00a870; font-size: 15px; font-weight: 500; background: #fff; cursor: pointer; }
+        
+        .btn-same { border: 1px solid #00a870; color: #00a870; background: transparent; padding: 4px 8px; border-radius: 4px; font-size: 13px; margin-left: 8px; cursor: pointer; white-space: nowrap; }
+        
         .upload-box { width: 72px; height: 72px; background: #f7f9fa; border-radius: 6px; display: flex; justify-content: center; align-items: center; color: #ccc; font-size: 28px; font-weight: 300; margin: 15px; cursor: pointer; }
+        
+        /* 签字开关 */
         .switch { position: relative; display: inline-block; width: 48px; height: 26px; }
         .switch input { opacity: 0; width: 0; height: 0; }
         .slider { position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background-color: #ddd; transition: .4s; border-radius: 26px; }
         .slider:before { position: absolute; content: ""; height: 22px; width: 22px; left: 2px; bottom: 2px; background-color: white; transition: .4s; border-radius: 50%; box-shadow: 0 1px 3px rgba(0,0,0,0.2); }
-        input:checked + .slider { background-color: #009b6b; }
+        input:checked + .slider { background-color: #00a870; }
         input:checked + .slider:before { transform: translateX(22px); }
+        
+        /* 印章选择 */
         .stamp-group { display: flex; gap: 12px; padding: 15px; }
         .stamp-btn { flex: 1; text-align: center; padding: 12px 0; border-radius: 4px; font-size: 15px; background: #f7f9fa; color: #666; cursor: pointer; }
-        .stamp-btn.active { background: #009b6b; color: #fff; }
+        .stamp-btn.active { background: #00a870; color: #fff; }
+        
+        /* 底部固定保存按钮 */
         .bottom-bar { position: absolute; bottom: 0; left: 0; width: 100%; background: #fff; padding: 12px 16px; z-index: 100; border-top: 1px solid #eee; }
-        .btn-block { background: #009b6b; color: #fff; border: none; width: 100%; padding: 14px; border-radius: 8px; font-size: 16px; font-weight: bold; cursor: pointer; }
+        .btn-block { background: #00a870; color: #fff; border: none; width: 100%; padding: 14px; border-radius: 8px; font-size: 16px; font-weight: bold; cursor: pointer; }
 
-        /* ================= 视图2：详情页 ================= */
+        /* ================= 视图2：详情页 (保持不变) ================= */
         .detail-header-nav { display: flex; justify-content: space-between; align-items: center; padding: 15px 16px; background: #f4f6f8; position: sticky; top:0; z-index:10;}
         .detail-actions { display: flex; gap: 10px; }
         .detail-actions span { background: #fff; padding: 6px 12px; border-radius: 20px; font-size: 13px; color: #333; cursor: pointer; border: 1px solid #eee; }
@@ -97,44 +107,28 @@
         .dt-summary .val { font-size: 15px; font-weight: bold; }
         .history-title { font-size: 16px; font-weight: bold; margin: 15px 15px 10px 15px; }
         .history-box { padding: 0 15px 15px 25px; position: relative; }
-        .history-line { position: absolute; left: 18px; top: 5px; bottom: 20px; width: 1px; border-left: 1px dashed #009b6b; }
+        .history-line { position: absolute; left: 18px; top: 5px; bottom: 20px; width: 1px; border-left: 1px dashed #00a870; }
         .history-item { position: relative; margin-bottom: 15px; display: flex; justify-content: space-between; font-size: 14px; }
         .history-item:last-child { margin-bottom: 0; }
-        .history-item .dot { position: absolute; left: -10px; top: 4px; width: 8px; height: 8px; border-radius: 50%; background: #009b6b; }
+        .history-item .dot { position: absolute; left: -10px; top: 4px; width: 8px; height: 8px; border-radius: 50%; background: #00a870; }
         .history-item .time { color: #ccc; }
         .detail-bottom-bar { position: absolute; bottom: 0; left: 0; width: 100%; background: #fff; display: flex; padding: 10px 15px; border-top: 1px solid #eee; z-index: 100; align-items: center; }
         .btn-home { display: flex; flex-direction: column; align-items: center; font-size: 12px; color: #666; width: 60px; cursor: pointer; }
-        .btn-preview { flex: 1; background: #009b6b; color: #fff; border-radius: 6px; font-size: 16px; font-weight: bold; display: flex; justify-content: center; align-items: center; padding: 14px; margin-left: 15px; cursor: pointer; }
+        .btn-preview { flex: 1; background: #00a870; color: #fff; border-radius: 6px; font-size: 16px; font-weight: bold; display: flex; justify-content: center; align-items: center; padding: 14px; margin-left: 15px; cursor: pointer; }
 
-        /* ================= 视图3：预览页 ================= */
+        /* ================= 视图3：预览页 (保持不变) ================= */
         #view3 { background-color: #f4f6f8; padding-bottom: 80px; }
-        .pv-top-area { background: linear-gradient(180deg, #009b6b 0%, #0ba574 100%); padding: 20px 16px 60px 16px; text-align: center; position: relative; }
+        .pv-top-area { background: linear-gradient(180deg, #00a870 0%, #0ba574 100%); padding: 20px 16px 60px 16px; text-align: center; position: relative; }
         .pv-top-nav { display: flex; justify-content: space-between; color: #fff; font-size: 17px; font-weight: 500; margin-bottom: 20px; }
-        .pv-success-icon { display: inline-flex; justify-content: center; align-items: center; width: 48px; height: 48px; background: #fff; color: #009b6b; border-radius: 50%; font-size: 26px; font-weight: bold; margin-bottom: 12px; }
+        .pv-success-icon { display: inline-flex; justify-content: center; align-items: center; width: 48px; height: 48px; background: #fff; color: #00a870; border-radius: 50%; font-size: 26px; font-weight: bold; margin-bottom: 12px; }
         .pv-top-area h2 { font-size: 22px; color: #fff; letter-spacing: 1px; }
 
-        /* 预览卡片外框 */
         .receipt-wrapper {
-            margin: -30px 12px 20px 12px;
-            background: #fff;
-            border-radius: 8px;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.08);
-            overflow: hidden;
-            z-index: 2;
-            position: relative;
-            cursor: pointer;
-            height: 380px; /* 固定的预览高度 */
+            margin: -30px 12px 20px 12px; background: #fff; border-radius: 8px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.08); overflow: hidden;
+            z-index: 2; position: relative; cursor: pointer; height: 380px;
         }
-
-        /* 核心截图区：绝对宽度 800px，完美还原原版比例 */
-        .box {
-            width: 800px;
-            background: #ffffff;
-            padding: 40px 30px;
-            transform: scale(0.5); /* 默认缩小以适应手机屏幕 */
-            transform-origin: top left;
-        }
-
+        .box { width: 800px; background: #ffffff; padding: 40px 30px; transform: scale(0.5); transform-origin: top left; }
         .top-bar { display: flex; justify-content: space-between; align-items: flex-end; position: relative; margin-bottom: 20px; }
         .title { font-size: 34px; font-weight: bold; color: #000; letter-spacing: 2px; width: 100%; text-align: center; }
         .billid { position: absolute; right: 0; bottom: 5px; font-size: 18px; color: #7b5d40; font-weight: bold; }
@@ -146,7 +140,6 @@
         table { width: 100%; border-collapse: collapse; background: #ffffff; table-layout: fixed; border: 2px solid #7b5d40; }
         table th, table td { border: 1px solid #7b5d40; padding: 14px 4px; text-align: center; font-size: 18px; color: #000; font-weight: bold; white-space: nowrap; overflow: hidden; }
         table th { color: #7b5d40; font-weight: bold; }
-
         table th:nth-child(1), table td:nth-child(1) { width: 8%; }
         table th:nth-child(2), table td:nth-child(2) { width: 23%; }
         table th:nth-child(3), table td:nth-child(3) { width: 9%; }
@@ -158,19 +151,16 @@
         .total-row td { padding: 15px 10px; font-size: 18px; }
         .total-left { text-align: left; color: #7b5d40; }
         .total-right { text-align: right; color: #7b5d40; }
-
         .bottom { margin-top: 25px; font-size: 18px; line-height: 2; color: #7b5d40; font-weight: bold; display: flex; flex-direction: column; gap: 5px; }
         .bottom .val { color: #000; }
 
-        /* 底部按钮 */
-        .pv-click-hint { text-align: center; color: #009b6b; font-size: 15px; font-weight: bold; margin: 20px 0; cursor: pointer; }
+        .pv-click-hint { text-align: center; color: #00a870; font-size: 15px; font-weight: bold; margin: 20px 0; cursor: pointer; }
         .pv-bottom-bar { position: absolute; bottom: 0; left: 0; width: 100%; background: #fff; display: flex; padding: 10px 15px; border-top: 1px solid #eee; z-index: 100; align-items: center; gap: 10px; }
         .pv-btn-icon { display: flex; flex-direction: column; align-items: center; font-size: 11px; color: #666; cursor: pointer; width: 45px; flex-shrink: 0; }
         .pv-btn-icon span { font-size: 20px; margin-bottom: 2px; }
-        .pv-btn-outline { flex: 1; display: flex; align-items: center; justify-content: center; border: 1px solid #009b6b; color: #009b6b; border-radius: 6px; font-size: 14px; font-weight: bold; padding: 12px 0; cursor: pointer; white-space: nowrap; }
-        .pv-btn-solid { flex: 1.2; display: flex; align-items: center; justify-content: center; background: #009b6b; color: #fff; border-radius: 6px; font-size: 14px; font-weight: bold; padding: 12px 0; cursor: pointer; border: none; white-space: nowrap; }
+        .pv-btn-outline { flex: 1; display: flex; align-items: center; justify-content: center; border: 1px solid #00a870; color: #00a870; border-radius: 6px; font-size: 14px; font-weight: bold; padding: 12px 0; cursor: pointer; white-space: nowrap; }
+        .pv-btn-solid { flex: 1.2; display: flex; align-items: center; justify-content: center; background: #00a870; color: #fff; border-radius: 6px; font-size: 14px; font-weight: bold; padding: 12px 0; cursor: pointer; border: none; white-space: nowrap; }
 
-        /* 弹窗 */
         #image-modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: #0b0b0b; z-index: 99999; flex-direction: column; justify-content: center; align-items: center; }
         #image-modal img { max-width: 95%; max-height: 80%; border-radius: 4px; background: #fff; }
         #image-modal p { color: #fff; margin-top: 20px; font-size: 16px; font-weight: bold; }
@@ -245,9 +235,9 @@
                 <div class="label">服务时间</div>
                 <div class="val" style="gap:8px;">
                     <input type="date" id="in-date" class="val-input" style="width:auto;">
-                    <span class="icon-green" style="color:#009b6b;">📅</span>
+                    <span class="icon-green">📅</span>
                     <input type="time" id="in-time" class="val-input" style="width:auto;">
-                    <span class="icon-green" style="color:#009b6b;">🕒</span>
+                    <span class="icon-green">🕒</span>
                 </div>
             </div>
             <div class="row">
@@ -261,6 +251,13 @@
                 <div class="label">收款人</div>
                 <input type="text" id="in-payee" class="val-input" value="耿健">
             </div>
+        </div>
+
+        <div class="card">
+            <div class="row" style="border-bottom:none; padding-bottom:5px;">
+                <div class="label">记录凭证 <span style="font-size:12px; color:#999; font-weight:normal;">上传服务凭证、物流单等</span></div>
+            </div>
+            <div class="upload-box">+</div>
         </div>
 
         <div class="card">
@@ -314,7 +311,7 @@
             <div class="dt-summary">
                 <div class="row"><div class="label">应收金额</div><div class="val">¥ <span id="dt-total">0.00</span></div></div>
                 <div class="row"><div class="label">实收金额</div><div class="val">¥ <span id="dt-received">0.00</span></div></div>
-                <div class="row"><div class="label">欠款金额</div><div class="val" style="color:#333;">¥ <span id="dt-debt">0.00</span> <span id="dt-status" style="color:#009b6b; font-weight:normal; margin-left:5px;">| 已结清</span></div></div>
+                <div class="row"><div class="label">欠款金额</div><div class="val" style="color:#333;">¥ <span id="dt-debt">0.00</span> <span id="dt-status" style="color:#00a870; font-weight:normal; margin-left:5px;">| 已结清</span></div></div>
             </div>
         </div>
 
@@ -416,26 +413,20 @@
     addItem('脱膜油', 950, 1);
     addItem('油泵连接套', 40, 2);
 
-    // 渲染明细行（独立卡片式上下两行）
+    // 完美还原图1的明细行渲染
     function addItem(name = '', price = '', qty = '') {
         const container = document.getElementById('items-container');
         const row = document.createElement('div');
         row.className = 'item-row';
         row.innerHTML = `
-            <div class="item-row-top">
-                <input type="text" class="item-name" value="${name}" placeholder="请输入商品名称" onclick="this.select()">
-                <div class="btn-del" onclick="this.closest('.item-row').remove(); calcTotal()">-</div>
+            <input type="text" class="item-name" value="${name}" placeholder="名称" onclick="this.select()">
+            <div class="item-calc">
+                <input type="number" class="num-input item-price" value="${price}" onclick="this.select()" oninput="calcTotal()">
+                <span>*</span>
+                <input type="number" class="num-input item-qty" value="${qty}" onclick="this.select()" oninput="calcTotal()">
             </div>
-            <div class="item-row-bottom">
-                <div class="item-calc">
-                    <span>单价</span>
-                    <input type="number" class="num-input item-price" value="${price}" onclick="this.select()" oninput="calcTotal()">
-                    <span>*</span>
-                    <span>数量</span>
-                    <input type="number" class="num-input item-qty" value="${qty}" onclick="this.select()" oninput="calcTotal()">
-                </div>
-                <div class="item-subtotal">0.00</div>
-            </div>
+            <div class="item-subtotal">0.00</div>
+            <div class="btn-del" onclick="this.parentElement.remove(); calcTotal()">-</div>
         `;
         container.appendChild(row);
         calcTotal();
